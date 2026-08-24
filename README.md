@@ -34,6 +34,9 @@ d:\GenLayerIntelligent\
 
 ## 🤝 SmartEscrow Intelligent Contract
 
+**Deployed Smart Contract Address (GenLayer Studio Testnet):**  
+`0xb4412590158f0CceEc98ebffAFf99C851Ab6703c`
+
 The core smart contract logic is implemented in [SmartEscrow.py](file:///d:/GenLayerIntelligent/contracts/SmartEscrow.py). It holds funds securely between a Buyer and a Seller, arbitrating disputes autonomously through validator-executed Large Language Models (LLMs).
 
 ### ⚙️ State Machine Lifecycle

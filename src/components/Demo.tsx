@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, ShieldCheck, Play, Loader2, Sparkles, RefreshCw, Cpu, Database, CheckCircle2, AlertCircle, ExternalLink, Copy, Check, Network } from "lucide-react";
 
-// Network configuration data
+// Network & Contract configuration data
 const NETWORK = {
   name: "GenLayer Studio",
   rpc: "studio.genlayer.com/api",
   chainId: "61999",
   currency: "GEN",
   explorer: "https://explorer-studio.genlayer.com/",
+  contractAddress: "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c",
 };
 
 function NetworkCard() {
@@ -24,11 +25,12 @@ function NetworkCard() {
   };
 
   const fields = [
+    { label: "SmartEscrow Address", value: NETWORK.contractAddress, key: "contractAddress" },
     { label: "Network Name", value: NETWORK.name, key: "name" },
     { label: "Default RPC URL", value: NETWORK.rpc, key: "rpc" },
     { label: "Chain ID", value: NETWORK.chainId, key: "chainId" },
     { label: "Currency Symbol", value: NETWORK.currency, key: "currency" },
-    { label: "Block Explorer URL", value: NETWORK.explorer, key: "explorer" },
+    { label: "Block Explorer", value: NETWORK.explorer, key: "explorer" },
   ];
 
   return (
@@ -62,7 +64,7 @@ function NetworkCard() {
       </div>
 
       {/* Fields grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-white/5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y sm:divide-y-0 divide-white/5">
         {fields.map((field) => (
           <button
             key={field.key}
@@ -297,7 +299,7 @@ export default function Demo() {
   };
 
   // Contract Simulation State
-  const [selectedPrompt, setSelectedPrompt] = useState("flight_delay");
+  const [selectedPrompt, setSelectedPrompt] = useState("smart_escrow");
   const [simulationState, setSimulationState] = useState<"idle" | "submitting" | "querying" | "consensus" | "success">("idle");
   const [node1Status, setNode1Status] = useState<"pending" | "processing" | "done">("pending");
   const [node2Status, setNode2Status] = useState<"pending" | "processing" | "done">("pending");
@@ -323,8 +325,8 @@ export default function Demo() {
     const newTxHash = "0x" + Math.random().toString(16).substring(2, 6) + "..." + Math.random().toString(16).substring(2, 6);
     const newTx: Transaction = {
       hash: newTxHash,
-      contract: selectedPrompt === "flight_delay" ? "FlightInsurance" : selectedPrompt === "price_lock" ? "CryptoPriceOracle" : "LeaseParser",
-      method: selectedPrompt === "flight_delay" ? "verifyDelay" : selectedPrompt === "price_lock" ? "confirmPrice" : "auditClause",
+      contract: selectedPrompt === "smart_escrow" ? "SmartEscrow (0xb441...703c)" : selectedPrompt === "flight_delay" ? "FlightInsurance" : selectedPrompt === "price_lock" ? "CryptoPriceOracle" : "LeaseParser",
+      method: selectedPrompt === "smart_escrow" ? "resolveDisputeWithAI" : selectedPrompt === "flight_delay" ? "verifyDelay" : selectedPrompt === "price_lock" ? "confirmPrice" : "auditClause",
       consensus: "Resolving...",
       status: "Pending",
       time: "Just now",
@@ -518,6 +520,11 @@ export default function Demo() {
                 <div className="space-y-3 mb-6">
                   {[
                     {
+                      id: "smart_escrow",
+                      title: "SmartEscrow (0xb441...703c)",
+                      desc: "AI-arbitrated Escrow contract on GenLayer Testnet. Evaluates dispute evidence autonomously.",
+                    },
+                    {
                       id: "flight_delay",
                       title: "Parametric Flight Insurance",
                       desc: "Verifies flight delay on a specific date using airport databases.",
@@ -555,6 +562,9 @@ export default function Demo() {
                     Contract Input Payload (Natural Language Prompt)
                   </label>
                   <div className="rounded-xl bg-black/40 border border-white/5 p-4 font-mono text-xs text-gray-300">
+                    {selectedPrompt === "smart_escrow" && (
+                      <p>"Contract Address: 0xb4412590158f0CceEc98ebffAFf99C851Ab6703c | Function: resolve_dispute_with_ai() | Buyer Evidence: Deliverable was 5 days late and missing security audit logs."</p>
+                    )}
                     {selectedPrompt === "flight_delay" && (
                       <p>"Evaluate delay claims for flight AA-102 departing JFK on June 25, 2026. Payout 1.5 ETH if delay exceeds 180 minutes."</p>
                     )}
