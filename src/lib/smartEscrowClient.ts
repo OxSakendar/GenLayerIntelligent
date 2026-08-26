@@ -37,13 +37,17 @@ export interface WriteTxResult {
   timestamp: string;
 }
 
+interface EthereumProvider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}
+
 const DEFAULT_CONTRACT_ADDRESS = "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c";
 const DEFAULT_RPC_URL = "https://studio.genlayer.com/api";
 
 /**
  * Perform JSON-RPC request to GenLayer node or studio RPC
  */
-async function rpcRequest(rpcUrl: string, method: string, params: any[]): Promise<any> {
+async function rpcRequest(rpcUrl: string, method: string, params: unknown[]): Promise<Record<string, unknown> | null> {
   const url = rpcUrl.startsWith("http") ? rpcUrl : `https://${rpcUrl}`;
   try {
     const res = await fetch(url, {
@@ -59,13 +63,14 @@ async function rpcRequest(rpcUrl: string, method: string, params: any[]): Promis
     if (!res.ok) {
       throw new Error(`HTTP error ${res.status}`);
     }
-    const json = await res.json();
+    const json = (await res.json()) as { error?: { message?: string }; result?: Record<string, unknown> };
     if (json.error) {
       throw new Error(json.error.message || JSON.stringify(json.error));
     }
-    return json.result;
-  } catch (err: any) {
-    console.warn(`RPC request (${method}) notice:`, err.message || err);
+    return json.result || null;
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.warn(`RPC request (${method}) notice:`, errorMsg);
     throw err;
   }
 }
@@ -85,20 +90,20 @@ export async function fetchContractFullStatus(
       },
     ]);
     if (result) {
-      const amountWei = result.amount_wei || "0";
+      const amountWei = (result.amount_wei as string) || "0";
       return {
-        state: result.state || "AWAITING_DEPOSIT",
+        state: (result.state as string) || "AWAITING_DEPOSIT",
         amount_wei: amountWei,
         amount_gen: (Number(BigInt(amountWei)) / 1e18).toFixed(4),
-        owner: result.owner || "0x1111111111111111111111111111111111111111",
-        buyer: result.buyer || "0x2222222222222222222222222222222222222222",
-        seller: result.seller || "0x3333333333333333333333333333333333333333",
-        job_description: result.job_description || "Intelligent Escrow Job",
-        work_submission: result.work_submission || "",
-        buyer_evidence: result.buyer_evidence || "",
-        seller_evidence: result.seller_evidence || "",
-        dispute_ruling: result.dispute_ruling || "",
-        event_count: result.event_count || 0,
+        owner: (result.owner as string) || "0x1111111111111111111111111111111111111111",
+        buyer: (result.buyer as string) || "0x2222222222222222222222222222222222222222",
+        seller: (result.seller as string) || "0x3333333333333333333333333333333333333333",
+        job_description: (result.job_description as string) || "Intelligent Escrow Job",
+        work_submission: (result.work_submission as string) || "",
+        buyer_evidence: (result.buyer_evidence as string) || "",
+        seller_evidence: (result.seller_evidence as string) || "",
+        dispute_ruling: (result.dispute_ruling as string) || "",
+        event_count: (result.event_count as number) || 0,
       };
     }
   } catch {
@@ -129,7 +134,7 @@ export async function fetchContractFullStatus(
  */
 export async function executeSmartEscrowWrite(
   method: string,
-  args: any[] = [],
+  args: unknown[] = [],
   valueWei: string = "0",
   contractAddress: string = DEFAULT_CONTRACT_ADDRESS,
   walletAddress?: string
@@ -137,7 +142,7 @@ export async function executeSmartEscrowWrite(
   const time = new Date().toLocaleTimeString();
 
   // Try MetaMask ethereum transaction if available
-  const eth = typeof window !== "undefined" ? (window as any).ethereum : undefined;
+  const eth = typeof window !== "undefined" ? (window as unknown as { ethereum?: EthereumProvider }).ethereum : undefined;
   let txHash = "0x" + Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
 
   if (eth && walletAddress) {
@@ -148,7 +153,7 @@ export async function executeSmartEscrowWrite(
       };
       const hexData = "0x" + Buffer.from(JSON.stringify(dataPayload)).toString("hex");
 
-      const params: any = {
+      const params: Record<string, unknown> = {
         from: walletAddress,
         to: contractAddress,
         data: hexData,
@@ -164,18 +169,17 @@ export async function executeSmartEscrowWrite(
       if (typeof resHash === "string" && resHash.startsWith("0x")) {
         txHash = resHash;
       }
-    } catch (err: any) {
-      if (err.code === 4001) {
+    } catch (err: unknown) {
+      const e = err as { code?: number };
+      if (e.code === 4001) {
         throw new Error("Transaction rejected by user in wallet.");
       }
-      // If custom chain method fails, fallback to structured GenLayer transaction
     }
   }
 
-  // Parse settlement ruling winner if method is resolve_dispute_with_ai or execute_ruling
   let rulingWinner: "BUYER" | "SELLER" | undefined = undefined;
   if (method === "resolve_dispute_with_ai" || method === "execute_ruling") {
-    rulingWinner = "BUYER"; // Stored consensus ruling result
+    rulingWinner = "BUYER";
   }
 
   const consensusLogs = [
