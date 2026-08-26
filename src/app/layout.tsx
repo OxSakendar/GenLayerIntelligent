@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   description: "Build the future with GenLayer. A complete decentralized application powered by AI-driven Intelligent Contracts, enabling autonomous, transparent, and trustless decision-making.",
   keywords: "GenLayer, Intelligent Contracts, Decentralized AI, Web3, Blockchain, AI Consensus, AI Oracle, Smart Contracts",
   authors: [{ name: "GenLayer Team" }],
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.png",
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "GenLayer | Decentralized AI-Powered Intelligent Contracts",
     description: "Autonomous, transparent, and trustless decision-making powered by AI-driven Intelligent Contracts.",
