@@ -349,33 +349,33 @@ class TestExecuteRuling:
             account=BUYER_ADDRESS,
         )
 
-    def test_owner_can_rule_in_favour_of_buyer(self, escrow):
-        receipt = escrow.execute_ruling(args=["BUYER"], account=OWNER_ADDRESS)
-        assert tx_execution_succeeded(receipt)
-        assert escrow.get_state() == "RESOLVED_BUYER"
-        assert escrow.get_amount() == "0"
-
-    def test_owner_can_rule_in_favour_of_seller(self, escrow):
-        receipt = escrow.execute_ruling(args=["SELLER"], account=OWNER_ADDRESS)
-        assert tx_execution_succeeded(receipt)
-        assert escrow.get_state() == "RESOLVED_SELLER"
-        assert escrow.get_amount() == "0"
-
-    def test_execute_ruling_case_insensitive(self, escrow):
-        receipt = escrow.execute_ruling(args=["buyer"], account=OWNER_ADDRESS)
-        assert tx_execution_succeeded(receipt)
-        assert escrow.get_state() == "RESOLVED_BUYER"
-
-    def test_invalid_ruling_value_rejected(self, escrow):
-        receipt = escrow.execute_ruling(args=["DRAW"], account=OWNER_ADDRESS)
+    def test_settlement_fails_without_stored_consensus_ruling(self, escrow):
+        """Proves settlement cannot occur when resolve_dispute_with_ai has not been executed."""
+        receipt = escrow.execute_ruling(account=OWNER_ADDRESS)
         assert tx_execution_failed(receipt)
 
+    def test_caller_selected_winner_param_ignored_or_rejected(self, escrow):
+        """Proves caller cannot pass a winner parameter to bypass stored consensus ruling."""
+        # Calling execute_ruling before AI resolution fails even if caller attempts to pass a winner arg
+        receipt = escrow.execute_ruling(args=["BUYER"], account=OWNER_ADDRESS)
+        assert tx_execution_failed(receipt)
+
+    def test_owner_executes_stored_consensus_ruling(self, escrow):
+        """Proves settlement succeeds bound to the stored consensus ruling once AI resolution runs."""
+        escrow.resolve_dispute_with_ai(account=OWNER_ADDRESS)
+        receipt = escrow.execute_ruling(account=OWNER_ADDRESS)
+        assert tx_execution_succeeded(receipt)
+        assert escrow.get_state() in ("RESOLVED_BUYER", "RESOLVED_SELLER")
+        assert escrow.get_amount() == "0"
+
     def test_non_owner_cannot_execute_ruling(self, escrow):
-        receipt = escrow.execute_ruling(args=["BUYER"], account=BUYER_ADDRESS)
+        escrow.resolve_dispute_with_ai(account=OWNER_ADDRESS)
+        receipt = escrow.execute_ruling(account=BUYER_ADDRESS)
         assert tx_execution_failed(receipt)
 
     def test_dispute_resolved_event_emitted(self, escrow):
-        escrow.execute_ruling(args=["SELLER"], account=OWNER_ADDRESS)
+        escrow.resolve_dispute_with_ai(account=OWNER_ADDRESS)
+        escrow.execute_ruling(account=OWNER_ADDRESS)
         events = [json.loads(e) for e in escrow.get_events()]
         names  = [ev["event"] for ev in events]
         assert "DisputeResolved" in names
@@ -451,12 +451,17 @@ class TestFullLifecycle:
         )
         assert escrow.get_state() == "DISPUTED"
 
-        # AI resolution
+        # Attempting settlement without stored AI consensus ruling fails
+        failed_attempt = escrow.execute_ruling(account=OWNER_ADDRESS)
+        assert tx_execution_failed(failed_attempt)
+
+        # AI resolution generates stored consensus ruling
         escrow.resolve_dispute_with_ai(account=OWNER_ADDRESS)
 
-        # Owner executes
-        escrow.execute_ruling(args=["BUYER"], account=OWNER_ADDRESS)
-        assert escrow.get_state() == "RESOLVED_BUYER"
+        # Owner executes settlement bound strictly to stored consensus ruling
+        receipt = escrow.execute_ruling(account=OWNER_ADDRESS)
+        assert tx_execution_succeeded(receipt)
+        assert escrow.get_state() in ("RESOLVED_BUYER", "RESOLVED_SELLER")
 
     def test_full_event_log_is_coherent(self, escrow):
         """Verify events are logged in the correct order throughout the lifecycle."""

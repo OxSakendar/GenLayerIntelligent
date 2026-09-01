@@ -374,9 +374,8 @@ export default function Demo() {
     setNode3Status("pending");
     setConsensusLogs([`[SYS] Initiating real client transaction path: ${methodName}()`]);
 
-    const newTxHash = "0x" + Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
     const newTx: Transaction = {
-      hash: `${newTxHash.slice(0, 6)}...${newTxHash.slice(-4)}`,
+      hash: "Submitting...",
       contract: "SmartEscrow (0xb441...703c)",
       method: methodName,
       consensus: "Executing AI Consensus...",
@@ -387,112 +386,67 @@ export default function Demo() {
     setTransactions((prev) => [newTx, ...prev]);
 
     try {
-      // Execute via client RPC interface
+      // Execute via client RPC interface and verify transaction + resulting contract state
       const res: WriteTxResult = await executeSmartEscrowWrite(
         methodName,
         args,
         valueWei,
         NETWORK.contractAddress,
-        walletAddress
+        walletAddress,
+        NETWORK.rpc
       );
 
-      // Multi-node consensus visual timeline progression
-      setTimeout(() => {
-        setSimulationState("querying");
-        setNode1Status("processing");
-        setTimeout(() => {
-          setNode1Status("done");
-          setNode2Status("processing");
-        }, 1000);
-        setTimeout(() => {
-          setNode2Status("done");
-          setNode3Status("processing");
-        }, 2000);
-        setTimeout(() => {
-          setNode3Status("done");
-        }, 3000);
-      }, 1200);
+      // Visual node processing progression
+      setSimulationState("querying");
+      setNode1Status("processing");
+      setNode2Status("processing");
+      setNode3Status("done");
 
-      // Consensus phase
-      setTimeout(() => {
-        setSimulationState("consensus");
-        if (res.consensusLogs) {
-          setConsensusLogs(res.consensusLogs);
-        }
-      }, 4800);
+      setSimulationState("consensus");
+      if (res.consensusLogs) {
+        setConsensusLogs(res.consensusLogs);
+      }
 
-      // Finalize & Update state bound to stored consensus ruling
-      setTimeout(async () => {
-        setSimulationState("success");
-        setTotalExecuted((prev) => prev + 1);
-        setTokenBalance((prev) => (Math.max(0, parseFloat(prev) - 0.02)).toFixed(4));
+      setSimulationState("success");
+      setTotalExecuted((prev) => prev + 1);
+      setTokenBalance((prev) => Math.max(0, parseFloat(prev) - 0.02).toFixed(4));
 
-        // State machine progression update
-        setContractStatus((prev) => {
-          if (!prev) return prev;
-          let nextState = prev.state;
-          let nextAmount = prev.amount_gen;
-          let nextSubmission = prev.work_submission;
-          let nextBuyerEvidence = prev.buyer_evidence;
-          let nextSellerEvidence = prev.seller_evidence;
-          let nextRuling = prev.dispute_ruling;
-
-          if (methodName === "deposit") {
-            nextState = "FUNDED";
-            nextAmount = "1.0000";
-          } else if (methodName === "mark_completed") {
-            nextState = "WORK_COMPLETED";
-            nextSubmission = args[0] || "Deliverable repository submitted.";
-          } else if (methodName === "open_dispute") {
-            nextState = "DISPUTED";
-            nextBuyerEvidence = args[0] || "Deliverable incomplete.";
-          } else if (methodName === "submit_seller_evidence") {
-            nextSellerEvidence = args[0] || "Evidence provided.";
-          } else if (methodName === "resolve_dispute_with_ai") {
-            nextRuling = JSON.stringify({
-              ruling: "BUYER",
-              reasoning: "AI Consensus analyzed evidence: mandatory security logs were omitted from initial delivery.",
-            });
-          } else if (methodName === "execute_ruling") {
-            // BOUND SETTLEMENT to stored consensus ruling!
-            nextState = "RESOLVED_BUYER";
-            nextAmount = "0.0000";
-          } else if (methodName === "approve_payment") {
-            nextState = "RELEASED";
-            nextAmount = "0.0000";
-          }
-
-          return {
-            ...prev,
-            state: nextState,
-            amount_gen: nextAmount,
-            work_submission: nextSubmission,
-            buyer_evidence: nextBuyerEvidence,
-            seller_evidence: nextSellerEvidence,
-            dispute_ruling: nextRuling,
-            event_count: prev.event_count + 1,
-          };
-        });
-
-        setTransactions((prev) =>
-          prev.map((tx, idx) => {
-            if (idx === 0) {
-              return {
-                ...tx,
-                consensus: "3/3 Nodes (100% agreement)",
-                status: "Success",
-              };
-            }
-            return tx;
-          })
-        );
-
-        // Fetch live state refresh
+      if (res.resultingStatus) {
+        setContractStatus(res.resultingStatus);
+      } else {
         await refreshContractState();
-      }, 6500);
-    } catch (err: any) {
+      }
+
+      setTransactions((prev) =>
+        prev.map((tx, idx) => {
+          if (idx === 0) {
+            return {
+              ...tx,
+              hash: res.txHash ? `${res.txHash.slice(0, 6)}...${res.txHash.slice(-4)}` : "Verified",
+              consensus: "3/3 Nodes (100% agreement)",
+              status: "Success",
+            };
+          }
+          return tx;
+        })
+      );
+    } catch (err: unknown) {
       setSimulationState("idle");
-      alert(`Contract action failed: ${err.message || err}`);
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setTransactions((prev) =>
+        prev.map((tx, idx) => {
+          if (idx === 0) {
+            return {
+              ...tx,
+              hash: "Failed",
+              consensus: "Transaction Failed",
+              status: "Failed",
+            };
+          }
+          return tx;
+        })
+      );
+      alert(`Contract action failed: ${errorMsg}`);
     }
   };
 
