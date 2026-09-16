@@ -102,7 +102,6 @@ class SmartEscrow(gl.Contract):
         self.buyer_evidence  = ""
         self.seller_evidence = ""
         self.dispute_ruling  = ""
-        self.events_log      = DynArray()
 
         self._emit_event(
             "EscrowCreated",
