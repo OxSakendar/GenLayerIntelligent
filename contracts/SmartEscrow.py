@@ -1,6 +1,6 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 """
-SmartEscrow — A GenLayer Intelligent Contract
+SmartEscrow - A GenLayer Intelligent Contract
 ==============================================
 Purpose: Hold funds in escrow between a buyer and seller, with
          AI-powered dispute resolution via GenLayer's LLM integration.
@@ -11,10 +11,10 @@ Roles:
   - seller : marks work as completed
 
 Lifecycle (happy path):
-  AWAITING_DEPOSIT → FUNDED → WORK_COMPLETED → RELEASED
+  AWAITING_DEPOSIT -> FUNDED -> WORK_COMPLETED -> RELEASED
 
 Dispute path:
-  FUNDED / WORK_COMPLETED → DISPUTED → RESOLVED_BUYER or RESOLVED_SELLER
+  FUNDED / WORK_COMPLETED -> DISPUTED -> RESOLVED_BUYER or RESOLVED_SELLER
 
 Security:
   - All state-mutating functions enforce role-based access control.
@@ -28,9 +28,9 @@ import json
 import typing
 
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 # Escrow state constants (stored as plain str)
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 STATE_AWAITING_DEPOSIT = "AWAITING_DEPOSIT"
 STATE_FUNDED           = "FUNDED"
 STATE_WORK_COMPLETED   = "WORK_COMPLETED"
@@ -46,20 +46,20 @@ class SmartEscrow(gl.Contract):
     Intelligent Escrow Contract on GenLayer.
 
     State variables (all are persisted on-chain):
-      owner           — deployer address (administrator / arbiter)
-      buyer           — address that deposits funds and approves work
-      seller          — address that marks work as completed
-      amount          — total amount held in escrow (u256, in wei)
-      state           — current lifecycle state (string constant above)
-      job_description — description of the work to be done
-      work_submission — seller's submission / proof of completion
-      buyer_evidence  — buyer's evidence in a dispute
-      seller_evidence — seller's evidence in a dispute
-      dispute_ruling  — LLM-generated ruling text (informational)
-      events_log      — chronological list of event strings
+      owner           - deployer address (administrator / arbiter)
+      buyer           - address that deposits funds and approves work
+      seller          - address that marks work as completed
+      amount          - total amount held in escrow (u256, in wei)
+      state           - current lifecycle state (string constant above)
+      job_description - description of the work to be done
+      work_submission - seller's submission / proof of completion
+      buyer_evidence  - buyer's evidence in a dispute
+      seller_evidence - seller's evidence in a dispute
+      dispute_ruling  - LLM-generated ruling text (informational)
+      events_log      - chronological list of event strings
     """
 
-    # ── Persistent state (type-annotated = stored on-chain) ──────────────────
+    # -- Persistent state (type-annotated = stored on-chain) ------------------
     owner:           Address
     buyer:           Address
     seller:          Address
@@ -72,9 +72,9 @@ class SmartEscrow(gl.Contract):
     dispute_ruling:  str
     events_log:      DynArray[str]
 
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
     # Constructor
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
 
     def __init__(
         self,
@@ -118,9 +118,9 @@ class SmartEscrow(gl.Contract):
             },
         )
 
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
     # Internal helpers
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
 
     def _emit_event(self, name: str, data: dict) -> None:
         """Append a structured event string to the on-chain log."""
@@ -146,9 +146,9 @@ class SmartEscrow(gl.Contract):
                 f"Allowed: {list(allowed)}"
             )
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # Write functions — happy-path lifecycle
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # Write functions - happy-path lifecycle
+    # -------------------------------------------------------------------------
 
     @gl.public.write.payable
     def deposit(self) -> None:
@@ -160,7 +160,7 @@ class SmartEscrow(gl.Contract):
         - A non-zero value must be sent with the transaction.
 
         The contract's balance increases by gl.message.value (GEN wei).
-        State transitions: AWAITING_DEPOSIT → FUNDED.
+        State transitions: AWAITING_DEPOSIT -> FUNDED.
         """
         self._only_buyer()
         self._require_state(STATE_AWAITING_DEPOSIT)
@@ -188,7 +188,7 @@ class SmartEscrow(gl.Contract):
 
         - Caller must be the seller.
         - Escrow must be in FUNDED state.
-        State transitions: FUNDED → WORK_COMPLETED.
+        State transitions: FUNDED -> WORK_COMPLETED.
         """
         self._only_seller()
         self._require_state(STATE_FUNDED)
@@ -214,7 +214,7 @@ class SmartEscrow(gl.Contract):
 
         - Caller must be the buyer.
         - Escrow must be in WORK_COMPLETED state.
-        State transitions: WORK_COMPLETED → RELEASED.
+        State transitions: WORK_COMPLETED -> RELEASED.
 
         Funds are transferred to the seller via emit_transfer AFTER
         updating state (guards against re-entrancy).
@@ -256,7 +256,7 @@ class SmartEscrow(gl.Contract):
 
         - Caller must be the buyer.
         - Escrow must be in FUNDED or WORK_COMPLETED state.
-        State transitions: FUNDED / WORK_COMPLETED → DISPUTED.
+        State transitions: FUNDED / WORK_COMPLETED -> DISPUTED.
         """
         self._only_buyer()
         self._require_state(STATE_FUNDED, STATE_WORK_COMPLETED)
@@ -302,9 +302,9 @@ class SmartEscrow(gl.Contract):
             },
         )
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # AI-powered dispute resolution (non-deterministic — uses eq_principle)
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # AI-powered dispute resolution (non-deterministic - uses eq_principle)
+    # -------------------------------------------------------------------------
 
     @gl.public.write
     def resolve_dispute_with_ai(self) -> None:
@@ -326,7 +326,7 @@ class SmartEscrow(gl.Contract):
         - The dispute_ruling field is stored for transparency.
         - The owner must still execute the final payout with execute_ruling().
 
-        ⚠️  The LLM call is isolated inside gl.eq_principle.prompt_non_comparative
+        [WARNING]  The LLM call is isolated inside gl.eq_principle.prompt_non_comparative
             so that every validator independently verifies the ruling quality,
             achieving on-chain consensus without requiring identical LLM outputs.
         """
@@ -336,7 +336,7 @@ class SmartEscrow(gl.Contract):
 
         self._require_state(STATE_DISPUTED)
 
-        # ── Capture state into local variables (required by GenLayer SDK;
+        # -- Capture state into local variables (required by GenLayer SDK;
         #    contract storage is NOT accessible inside non-deterministic blocks).
         job_desc        = self.job_description
         work_submission = self.work_submission
@@ -351,7 +351,7 @@ Evaluate the following escrow dispute and provide a ruling.
 {job_desc}
 
 === SELLER'S WORK SUBMISSION ===
-{work_submission if work_submission else "(No submission provided — work may not have been delivered)"}
+{work_submission if work_submission else "(No submission provided - work may not have been delivered)"}
 
 === BUYER'S EVIDENCE / COMPLAINT ===
 {buyer_evidence}
@@ -361,15 +361,15 @@ Evaluate the following escrow dispute and provide a ruling.
 
 === YOUR TASK ===
 Based solely on the information above, determine whether:
-  - The seller fulfilled the agreed-upon job description → rule in favour of SELLER
-  - The seller failed to deliver or delivered substandard work → rule in favour of BUYER
+  - The seller fulfilled the agreed-upon job description -> rule in favour of SELLER
+  - The seller failed to deliver or delivered substandard work -> rule in favour of BUYER
 
 Respond ONLY with a valid JSON object in this exact format (no markdown, no extra text):
 {{"ruling": "BUYER" or "SELLER", "reasoning": "concise one-paragraph explanation"}}
 """
             return prompt
 
-        # ── AI call wrapped in eq_principle for on-chain consensus ────────────
+        # -- AI call wrapped in eq_principle for on-chain consensus ------------
         ruling_json: str = gl.eq_principle.prompt_non_comparative(
             build_prompt,
             task=(
@@ -385,7 +385,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             """,
         )
 
-        # ── Persist the AI ruling ─────────────────────────────────────────────
+        # -- Persist the AI ruling ---------------------------------------------
         self.dispute_ruling = ruling_json
 
         self._emit_event(
@@ -396,9 +396,9 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             },
         )
 
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
     # Owner: execute final dispute outcome
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
 
     @gl.public.write
     def execute_ruling(self) -> None:
@@ -414,7 +414,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
         - Settlement cannot occur without a valid stored consensus ruling.
 
         Funds are transferred to the winning party AFTER state is updated.
-        State transitions: DISPUTED → RESOLVED_BUYER or RESOLVED_SELLER.
+        State transitions: DISPUTED -> RESOLVED_BUYER or RESOLVED_SELLER.
         """
         self._only_owner()
         self._require_state(STATE_DISPUTED)
@@ -473,7 +473,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
 
         - Caller must be the owner.
         - Escrow must be in FUNDED or WORK_COMPLETED state.
-        State transitions: FUNDED / WORK_COMPLETED → REFUNDED.
+        State transitions: FUNDED / WORK_COMPLETED -> REFUNDED.
         """
         self._only_owner()
         self._require_state(STATE_FUNDED, STATE_WORK_COMPLETED)
@@ -493,9 +493,9 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
 
         emit_transfer(self.buyer, refund_amount)
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # View functions (read-only — no state changes)
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # View functions (read-only - no state changes)
+    # -------------------------------------------------------------------------
 
     @gl.public.view
     def get_state(self) -> str:
