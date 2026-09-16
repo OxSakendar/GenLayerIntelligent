@@ -593,7 +593,7 @@ export default function Demo() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-400 font-sans font-semibold">Escrow Value:</span>
-                      <span className="text-secondary font-bold">{contractStatus?.amount_gen || "1.0000"} GEN</span>
+                      <span className="text-secondary font-bold">{contractStatus?.amount_gen ?? "0.0000"} GEN</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-400 font-sans font-semibold">Contract Address:</span>
