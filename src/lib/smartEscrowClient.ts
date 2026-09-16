@@ -99,12 +99,25 @@ export async function fetchContractFullStatus(
     throw new Error(`Failed to read SmartEscrow contract state at ${contractAddress}: Invalid RPC response`);
   }
 
-  const amountWei = (dataObj.amount_wei as string) || "0";
-  const amountGen = (Number(BigInt(amountWei)) / 1e18).toFixed(4);
+  const rawAmount = dataObj.amount_wei ?? dataObj.amount ?? "0";
+  const amountStr = String(rawAmount);
+  let amountGen = "0.0000";
+  try {
+    const num = Number(amountStr);
+    if (!isNaN(num) && num > 0) {
+      if (num >= 1e14) {
+        amountGen = (num / 1e18).toFixed(4);
+      } else {
+        amountGen = num.toFixed(4);
+      }
+    }
+  } catch {
+    amountGen = "0.0000";
+  }
 
   return {
     state: (dataObj.state as string) || "AWAITING_DEPOSIT",
-    amount_wei: amountWei,
+    amount_wei: amountStr,
     amount_gen: amountGen,
     owner: (dataObj.owner as string) || "",
     buyer: (dataObj.buyer as string) || "",
