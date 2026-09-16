@@ -44,7 +44,7 @@ interface EthereumProvider {
 }
 
 const DEFAULT_CONTRACT_ADDRESS = "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c";
-const DEFAULT_RPC_URL = "https://studio.genlayer.com/api";
+const DEFAULT_RPC_URL = "https://studio-dev.genlayer.com/api";
 
 /**
  * Perform JSON-RPC request to GenLayer node or studio RPC

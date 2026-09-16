@@ -32,11 +32,11 @@ import {
 
 // Network & Contract configuration data
 const NETWORK = {
-  name: "GenLayer Studio",
-  rpc: "studio.genlayer.com/api",
-  chainId: "61999",
+  name: "GenLayer Studio Next",
+  rpc: "studio-dev.genlayer.com/api",
+  chainId: "61997",
   currency: "GEN",
-  explorer: "https://explorer-studio.genlayer.com/",
+  explorer: "https://explorer-studio-dev.genlayer.com/",
   contractAddress: "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c",
 };
 
@@ -181,7 +181,6 @@ export default function Demo() {
   // SmartEscrow Real Client State (Read & Write path)
   const [contractStatus, setContractStatus] = useState<SmartEscrowStatus | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
-  const [activeTab, setActiveTab] = useState<"smart_escrow" | "flight_delay" | "price_lock" | "lease_parser">("smart_escrow");
 
   // Form Inputs for Real Write Operations
   const [submissionInput, setSubmissionInput] = useState("Deliverable code repository & documentation delivered.");
@@ -197,10 +196,9 @@ export default function Demo() {
   const [node3Status, setNode3Status] = useState<"pending" | "processing" | "done">("pending");
 
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [totalExecuted, setTotalExecuted] = useState(1482903);
 
   // ─── MetaMask helpers ────────────────────────────────────────────────────────
-  const GEN_CHAIN_ID = "0xF22F"; // 61999 in hex
+  const GEN_CHAIN_ID = "0xF22D"; // 61997 in hex
 
   const getProvider = () =>
     typeof window !== "undefined" ? (window as Window & { ethereum?: Record<string, unknown> }).ethereum : undefined;
@@ -408,7 +406,6 @@ export default function Demo() {
       }
 
       setSimulationState("success");
-      setTotalExecuted((prev) => prev + 1);
       setTokenBalance((prev) => Math.max(0, parseFloat(prev) - 0.02).toFixed(4));
 
       if (res.resultingStatus) {
@@ -585,161 +582,120 @@ export default function Demo() {
                   </button>
                 </div>
 
-                {/* Contract Selection Tab */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  <button
-                    onClick={() => setActiveTab("smart_escrow")}
-                    className={`p-3 rounded-xl border text-xs font-bold text-left transition-all flex items-center gap-2 ${
-                      activeTab === "smart_escrow"
-                        ? "bg-primary/20 border-primary text-white"
-                        : "bg-white/5 border-white/5 text-gray-400 hover:border-white/10"
-                    }`}
-                  >
-                    <FileCode2 className="w-4 h-4 text-primary" />
-                    <span>SmartEscrow Real Client</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("flight_delay")}
-                    className={`p-3 rounded-xl border text-xs font-bold text-left transition-all flex items-center gap-2 ${
-                      activeTab === "flight_delay"
-                        ? "bg-primary/20 border-primary text-white"
-                        : "bg-white/5 border-white/5 text-gray-400 hover:border-white/10"
-                    }`}
-                  >
-                    <Lock className="w-4 h-4 text-secondary" />
-                    <span>Oracle Templates</span>
-                  </button>
-                </div>
-
-                {activeTab === "smart_escrow" ? (
-                  <div className="space-y-4">
-                    {/* Live State Card Readout */}
-                    <div className="glass-panel p-4 rounded-xl border border-white/10 bg-black/30 text-xs font-mono space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 font-sans font-semibold">On-Chain State:</span>
-                        <span className="px-2 py-0.5 rounded-full font-bold bg-primary/20 text-primary border border-primary/30">
-                          {contractStatus?.state || "AWAITING_DEPOSIT"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 font-sans font-semibold">Escrow Value:</span>
-                        <span className="text-secondary font-bold">{contractStatus?.amount_gen || "1.0000"} GEN</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400 font-sans font-semibold">Contract Address:</span>
-                        <span className="text-gray-300 font-mono text-[10px]">0xb441...703c</span>
-                      </div>
+                {/* Live State Card Readout */}
+                <div className="space-y-4">
+                  <div className="glass-panel p-4 rounded-xl border border-white/10 bg-black/30 text-xs font-mono space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 font-sans font-semibold">On-Chain State:</span>
+                      <span className="px-2.5 py-1 rounded-full font-bold bg-primary/20 text-primary border border-primary/30">
+                        {contractStatus?.state || "AWAITING_DEPOSIT"}
+                      </span>
                     </div>
-
-                    {/* Action Form Inputs */}
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-400 mb-1 block">Work Submission Details</label>
-                        <input
-                          type="text"
-                          value={submissionInput}
-                          onChange={(e) => setSubmissionInput(e.target.value)}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
-                          placeholder="Seller deliverable details..."
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-400 mb-1 block">Buyer Dispute Evidence</label>
-                        <input
-                          type="text"
-                          value={buyerEvidenceInput}
-                          onChange={(e) => setBuyerEvidenceInput(e.target.value)}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
-                          placeholder="Buyer explanation & evidence..."
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-400 mb-1 block">Seller Rebuttal Evidence</label>
-                        <input
-                          type="text"
-                          value={sellerEvidenceInput}
-                          onChange={(e) => setSellerEvidenceInput(e.target.value)}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
-                          placeholder="Seller rebuttal argument..."
-                        />
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 font-sans font-semibold">Escrow Value:</span>
+                      <span className="text-secondary font-bold">{contractStatus?.amount_gen || "1.0000"} GEN</span>
                     </div>
-
-                    {/* Contract Method Buttons Grid */}
-                    <div className="grid grid-cols-2 gap-2 pt-2">
-                      <button
-                        onClick={() => handleExecuteRealWrite("deposit", [], "1000000000000000000")}
-                        disabled={simulationState !== "idle"}
-                        className="flex items-center justify-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
-                      >
-                        <ArrowRightLeft className="w-3.5 h-3.5" />
-                        deposit()
-                      </button>
-
-                      <button
-                        onClick={() => handleExecuteRealWrite("mark_completed", [submissionInput])}
-                        disabled={simulationState !== "idle"}
-                        className="flex items-center justify-center gap-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        mark_completed()
-                      </button>
-
-                      <button
-                        onClick={() => handleExecuteRealWrite("open_dispute", [buyerEvidenceInput])}
-                        disabled={simulationState !== "idle"}
-                        className="flex items-center justify-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        open_dispute()
-                      </button>
-
-                      <button
-                        onClick={() => handleExecuteRealWrite("submit_seller_evidence", [sellerEvidenceInput])}
-                        disabled={simulationState !== "idle"}
-                        className="flex items-center justify-center gap-1.5 bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
-                      >
-                        <FileCode2 className="w-3.5 h-3.5" />
-                        submit_evidence()
-                      </button>
-                    </div>
-
-                    {/* AI Consensus & Bound Ruling Execution */}
-                    <div className="space-y-2 pt-2 border-t border-white/10">
-                      <button
-                        onClick={() => handleExecuteRealWrite("resolve_dispute_with_ai")}
-                        disabled={simulationState !== "idle"}
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white font-bold text-xs py-3 rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-                      >
-                        <Sparkles className="w-4 h-4 fill-white" />
-                        resolve_dispute_with_ai()
-                      </button>
-
-                      <button
-                        onClick={() => handleExecuteRealWrite("execute_ruling")}
-                        disabled={simulationState !== "idle"}
-                        className="w-full flex items-center justify-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs py-3 rounded-xl transition-all disabled:opacity-50"
-                        title="Executes payout bound strictly to stored consensus ruling"
-                      >
-                        <Gavel className="w-4 h-4" />
-                        execute_ruling() [Bound to Consensus Ruling]
-                      </button>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 font-sans font-semibold">Contract Address:</span>
+                      <span className="text-gray-300 font-mono text-[10px]">{NETWORK.contractAddress.slice(0, 6)}...{NETWORK.contractAddress.slice(-4)}</span>
                     </div>
                   </div>
-                ) : (
+
+                  {/* Action Form Inputs */}
                   <div className="space-y-3">
-                    <p className="text-xs text-gray-400">Select an oracle contract scenario to simulate multi-LLM consensus verification:</p>
-                    {["flight_delay", "price_lock", "lease_parser"].map((id) => (
-                      <button
-                        key={id}
-                        onClick={() => handleExecuteRealWrite(id === "flight_delay" ? "verifyDelay" : id === "price_lock" ? "confirmPrice" : "auditClause")}
-                        className="w-full text-left p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 text-gray-300 text-xs font-semibold"
-                      >
-                        Execute {id} check
-                      </button>
-                    ))}
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-400 mb-1 block">Work Submission Details</label>
+                      <input
+                        type="text"
+                        value={submissionInput}
+                        onChange={(e) => setSubmissionInput(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
+                        placeholder="Seller deliverable details..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-400 mb-1 block">Buyer Dispute Evidence</label>
+                      <input
+                        type="text"
+                        value={buyerEvidenceInput}
+                        onChange={(e) => setBuyerEvidenceInput(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
+                        placeholder="Buyer explanation & evidence..."
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-400 mb-1 block">Seller Rebuttal Evidence</label>
+                      <input
+                        type="text"
+                        value={sellerEvidenceInput}
+                        onChange={(e) => setSellerEvidenceInput(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-primary outline-none"
+                        placeholder="Seller rebuttal argument..."
+                      />
+                    </div>
                   </div>
-                )}
+
+                  {/* Contract Method Buttons Grid */}
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <button
+                      onClick={() => handleExecuteRealWrite("deposit", [], "1000000000000000000")}
+                      disabled={simulationState !== "idle"}
+                      className="flex items-center justify-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      deposit()
+                    </button>
+
+                    <button
+                      onClick={() => handleExecuteRealWrite("mark_completed", [submissionInput])}
+                      disabled={simulationState !== "idle"}
+                      className="flex items-center justify-center gap-1.5 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      mark_completed()
+                    </button>
+
+                    <button
+                      onClick={() => handleExecuteRealWrite("open_dispute", [buyerEvidenceInput])}
+                      disabled={simulationState !== "idle"}
+                      className="flex items-center justify-center gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      open_dispute()
+                    </button>
+
+                    <button
+                      onClick={() => handleExecuteRealWrite("submit_seller_evidence", [sellerEvidenceInput])}
+                      disabled={simulationState !== "idle"}
+                      className="flex items-center justify-center gap-1.5 bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      <FileCode2 className="w-3.5 h-3.5" />
+                      submit_evidence()
+                    </button>
+                  </div>
+
+                  {/* AI Consensus & Bound Ruling Execution */}
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <button
+                      onClick={() => handleExecuteRealWrite("resolve_dispute_with_ai")}
+                      disabled={simulationState !== "idle"}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white font-bold text-xs py-3 rounded-xl transition-all shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                    >
+                      <Sparkles className="w-4 h-4 fill-white" />
+                      resolve_dispute_with_ai()
+                    </button>
+
+                    <button
+                      onClick={() => handleExecuteRealWrite("execute_ruling")}
+                      disabled={simulationState !== "idle"}
+                      className="w-full flex items-center justify-center gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs py-3 rounded-xl transition-all disabled:opacity-50"
+                      title="Executes payout bound strictly to stored consensus ruling"
+                    >
+                      <Gavel className="w-4 h-4" />
+                      execute_ruling() [Bound to Consensus Ruling]
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -919,33 +875,33 @@ export default function Demo() {
         {/* Dashboard stats cards below */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
           <div className="glass-panel border border-white/10 rounded-2xl p-6">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Active Nodes</p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Deployment Network</p>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-white">148</span>
+              <span className="text-2xl font-extrabold text-white">Studio Next</span>
               <span className="text-xs text-emerald-400 font-bold flex items-center gap-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Live
+                Active
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Global validator node operators</p>
+            <p className="text-xs text-gray-500 mt-1">GenLayer Testnet Layer</p>
           </div>
 
           <div className="glass-panel border border-white/10 rounded-2xl p-6">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Gas Saving vs Oracles</p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Network Chain ID</p>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-white">92.4%</span>
-              <span className="text-xs text-secondary font-bold">Optimized</span>
+              <span className="text-2xl font-extrabold text-white font-mono">61997</span>
+              <span className="text-xs text-secondary font-bold">(0xF22D)</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Consensus cached execution layer</p>
+            <p className="text-xs text-gray-500 mt-1">EVM Compatible Chain ID</p>
           </div>
 
           <div className="glass-panel border border-white/10 rounded-2xl p-6">
-            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total Contracts Executed</p>
+            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Smart Contract</p>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-extrabold text-white font-mono">{totalExecuted.toLocaleString()}</span>
-              <span className="text-xs text-primary font-bold">+1.2/sec</span>
+              <span className="text-2xl font-extrabold text-white font-mono">SmartEscrow</span>
+              <span className="text-xs text-primary font-bold">Python VM</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Real-time ledger updates</p>
+            <p className="text-xs text-gray-500 mt-1">AI-arbitrated State Machine</p>
           </div>
         </div>
       </div>

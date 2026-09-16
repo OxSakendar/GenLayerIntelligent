@@ -48,11 +48,11 @@ export default function Footer() {
                   </div>
                 </div>
                 <span className="font-display text-lg font-bold tracking-tight text-white">
-                  Gen<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Layer</span>
+                  Smart<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Escrow</span>
                 </span>
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed max-w-sm mb-6">
-                GenLayer is the cognitive blockchain layer. We deploy decentralized, multi-LLM consensus protocols to empower autonomous smart contracts with web-search and LLM-reasoning abilities.
+              <p className="text-xs text-gray-400 leading-relaxed max-w-sm mb-6">
+                SmartEscrow is an Intelligent Contract on GenLayer leveraging multi-LLM consensus protocols to resolve escrow disputes autonomously and execute validated rulings onchain.
               </p>
               <div className="flex items-center gap-3">
                 {[

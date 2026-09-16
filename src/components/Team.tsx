@@ -54,42 +54,12 @@ function TechAvatar({ seedColor, accentColor }: { seedColor: string; accentColor
 
 const team = [
   {
-    name: "Elena Rostova",
-    role: "Co-Founder & Lead VM Architect",
-    avatarSeed: "#8b5cf6", // Purple
-    avatarAccent: "#3b82f6", // Blue
-    bio: "Former compiler engineer at Ethereum Foundation. Led development of the GenLayer Virtual Machine (GVM).",
-    github: "https://github.com",
-    twitter: "https://twitter.com",
-    linkedin: "https://linkedin.com",
-  },
-  {
-    name: "Marcus Vance",
-    role: "AI Integration Lead",
-    avatarSeed: "#06b6d4", // Cyan
-    avatarAccent: "#8b5cf6", // Purple
-    bio: "Ex-DeepMind systems researcher. Architected the multi-LLM consensus consensus logic and verifier node network.",
-    github: "https://github.com",
-    twitter: "https://twitter.com",
-    linkedin: "https://linkedin.com",
-  },
-  {
-    name: "Dr. Aris Thorne",
-    role: "Cryptography Research",
-    avatarSeed: "#10b981", // Emerald
-    avatarAccent: "#06b6d4", // Cyan
-    bio: "PHD in decentralized systems. Authored state-relayer proof protocols for fast cross-chain validation.",
-    github: "https://github.com",
-    twitter: "https://twitter.com",
-    linkedin: "https://linkedin.com",
-  },
-  {
     name: "Sakendar",
-    role: "Core Developer",
+    role: "Developer / Builder",
     avatarSeed: "#f59e0b", // Amber
     avatarAccent: "#e11d48", // Rose
-    bio: "Smart contract auditor. Designed Python compiler drivers and dev kits for GenLayer intelligent contracts.",
-    github: "https://github.com",
+    bio: "Developer & Architect of SmartEscrow on GenLayer. Building decentralized AI dispute resolution systems onchain.",
+    github: "https://github.com/OxSakendar",
     twitter: "https://twitter.com",
     linkedin: "https://linkedin.com",
   },
@@ -104,26 +74,27 @@ export default function Team() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-xs font-semibold text-secondary uppercase tracking-widest mb-3">Founding Team</h2>
+            <h2 className="text-xs font-semibold text-secondary uppercase tracking-widest mb-3">Project Builder</h2>
             <h3 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
-              Meet the Architects
+              Developer & Creator
             </h3>
             <div className="h-1.5 w-24 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full mb-6"></div>
             <p className="text-gray-400 text-lg leading-relaxed">
-              We are a team of decentralized engineers, AI researchers, and cryptographers building the consensus engine for the future of Web3.
+              Designed and built SmartEscrow on GenLayer Studio Next for decentralized AI dispute resolution.
             </p>
           </motion.div>
         </div>
 
-        {/* Profiles Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Profiles Grid (Single Card Centered) */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
           {team.map((member, idx) => (
             <motion.div
               key={idx}
@@ -186,6 +157,7 @@ export default function Team() {
               </div>
             </motion.div>
           ))}
+          </div>
         </div>
 
       </div>

@@ -1,13 +1,37 @@
-# GenLayer Intelligent
+# SmartEscrow
 
-An advanced application built on the **GenLayer** platform. This project features a secure, AI-arbitrated **SmartEscrow** Intelligent Contract (Python) alongside a high-fidelity **Next.js DApp Frontend Showcase** simulating multi-LLM validator consensus in real-time.
+Decentralized AI Dispute Resolution for Onchain Escrow
+
+SmartEscrow is a GenLayer Intelligent Contract that enables buyer-seller escrow disputes to be resolved through decentralized AI judgment and settled according to the stored onchain ruling.
+
+---
+
+## 🌐 Deployment Information
+
+- **Live Demo:** [https://genlayerintelligent.vercel.app/](https://genlayerintelligent.vercel.app/)
+- **Network:** GenLayer Studio Next
+- **Chain ID:** `61997`
+- **Smart Contract Address:** `0xb4412590158f0CceEc98ebffAFf99C851Ab6703c`
+- **Block Explorer:** [https://explorer-studio-dev.genlayer.com/address/0xb4412590158f0CceEc98ebffAFf99C851Ab6703c](https://explorer-studio-dev.genlayer.com/address/0xb4412590158f0CceEc98ebffAFf99C851Ab6703c)
+
+---
+
+## 💡 Why GenLayer?
+
+Traditional escrow requires a centralized party to resolve disputes.
+
+SmartEscrow uses GenLayer's decentralized judgment to evaluate dispute evidence and produce a consensus ruling.
+
+The ruling is stored by the intelligent contract and settlement is executed according to that validated outcome.
+
+GenLayer is therefore part of the core dispute-resolution mechanism, not simply an external AI service.
 
 ---
 
 ## 📂 Project Structure
 
 ```
-d:\GenLayerIntelligent\
+.
 ├── contracts/
 │   ├── SmartEscrow.py           # GenLayer Intelligent Contract (Python)
 │   └── tests/
@@ -17,27 +41,25 @@ d:\GenLayerIntelligent\
 │   │   ├── globals.css          # Styling & Glassmorphic Design tokens
 │   │   ├── layout.tsx           # Global Next.js app layout
 │   │   └── page.tsx             # Interactive Landing Page
-│   └── components/
-│       ├── Architecture.tsx     # Step-by-step Intelligent Pipeline explorer
-│       ├── Demo.tsx             # Live DApp Console simulator with MetaMask hook
-│       ├── Features.tsx         # Technical value proposition highlights
-│       ├── Hero.tsx             # Premium above-the-fold interface
-│       ├── HowItWorks.tsx       # Flow progression overview
-│       ├── Navbar.tsx           # Dynamic glass header navigation
-│       ├── Team.tsx             # Project contributors & roles
-│       └── ...
+│   ├── components/
+│   │   ├── Architecture.tsx     # Step-by-step Intelligent Pipeline explorer
+│   │   ├── Demo.tsx             # Production DApp interface connected to GenLayer Studio Next
+│   │   ├── Features.tsx         # Technical value proposition highlights
+│   │   ├── Hero.tsx             # Primary landing interface
+│   │   ├── HowItWorks.tsx       # Flow progression overview
+│   │   ├── Navbar.tsx           # Navigation header
+│   │   └── Team.tsx             # Developer details
+│   └── lib/
+│       └── smartEscrowClient.ts # GenLayer RPC & Wallet integration client
 ├── package.json                 # Next.js workspace config & scripts
-└── README.md                    # Project documentation (this file)
+└── README.md                    # Project documentation
 ```
 
 ---
 
 ## 🤝 SmartEscrow Intelligent Contract
 
-**Deployed Smart Contract Address (GenLayer Studio Testnet):**  
-`0xb4412590158f0CceEc98ebffAFf99C851Ab6703c`
-
-The core smart contract logic is implemented in [SmartEscrow.py](file:///d:/GenLayerIntelligent/contracts/SmartEscrow.py). It holds funds securely between a Buyer and a Seller, arbitrating disputes autonomously through validator-executed Large Language Models (LLMs).
+The core smart contract logic is implemented in [SmartEscrow.py](file:///contracts/SmartEscrow.py). It holds funds securely between a Buyer and a Seller, arbitrating disputes autonomously through validator-executed Large Language Models (LLMs).
 
 ### ⚙️ State Machine Lifecycle
 
@@ -71,41 +93,27 @@ ruling_json = gl.eq_principle.prompt_non_comparative(
 )
 ```
 
-By leveraging `gl.eq_principle.prompt_non_comparative`, multiple validator nodes query distinct LLMs (e.g., Claude, GPT, Llama) and check the output against semantic criteria. If consensus is reached, the transaction is finalized.
+By leveraging `gl.eq_principle.prompt_non_comparative`, multiple validator nodes query distinct LLMs and check the output against semantic criteria. If consensus is reached, the ruling is stored onchain for settlement execution.
 
 ---
 
-## 🖥️ Next.js DApp Frontend Showcase
+## 🖥️ Next.js DApp Frontend
 
-The frontend features a premium, responsive Web3 interface showcasing how GenLayer decentralized applications operate under the hood.
+The frontend features a production-style Web3 interface connected directly to the deployed SmartEscrow Intelligent Contract on GenLayer Studio Next.
 
-### Key Interactive Components
-- **Live DApp Simulator (`Demo.tsx`)**: 
-  - Allows connection to Web3 wallets (e.g., MetaMask).
-  - Automatically prompts adding/switching to **GenLayer Studio Testnet** (Chain ID: `61999`, Currency: `GEN`, RPC: `studio.genlayer.com/api`).
-  - Simulates transaction requests (e.g., Flight Delay Insurance, Crypto Price Verification, Lease Audit) and visualizes multi-LLM consensus verification logs step-by-step.
-- **Intelligent Pipeline Explorer (`Architecture.tsx`)**:
-  - Interactive diagram following requests from User ➔ Frontend ➔ API Gateway ➔ GenLayer VM ➔ AI Consensus ➔ Blockchain Finalization.
-  - Live code inspector updating mock JSON requests and Python VM outputs dynamically.
+### Primary DApp Flow
+1. **Deposit**: Buyer deposits funds into the escrow contract.
+2. **Mark Completed**: Seller submits proof of work completion.
+3. **Open Dispute**: Either party opens a dispute if deliverables differ from terms.
+4. **Submit Evidence**: Buyer and Seller submit detailed evidence.
+5. **Resolve with GenLayer**: Triggers multi-LLM consensus resolution onchain.
+6. **Execute Ruling**: Automatically settles funds to the winning party based on the stored ruling.
 
 ---
 
-## 🚀 Quick Start & Installation
+## 🚀 Quick Start & Local Setup
 
-### 1. Setup Local GenLayer Node
-
-Ensure Node.js and Docker are running on your system.
-
-```bash
-# Install the GenLayer CLI globally
-npm install -g @genlayer/cli
-
-# Spin up local development environment
-genlayer init
-genlayer up
-```
-
-### 2. Run the Intelligent Contract Pytest Suite
+### 1. Run the Intelligent Contract Pytest Suite
 
 Ensure Pytest and the GenLayer Python Test SDK are installed locally:
 
@@ -117,12 +125,12 @@ pip install genlayer-test pytest
 pytest contracts/tests/test_smart_escrow.py -v
 ```
 
-### 3. Start the Next.js Frontend App
+### 2. Start the Next.js Frontend App
 
 To interact with the frontend components locally:
 
 ```bash
-# Navigate to workspace and install packages
+# Install packages
 npm install
 
 # Run the development server
@@ -135,6 +143,6 @@ Open [http://localhost:3000](http://localhost:3000) to view the live dashboard c
 
 ## 🔒 Contract Security Mechanics
 
-1. **Re-entrancy Guard**: Safe state progression is guaranteed by updating on-chain variables (`self.amount = 0`, `self.state = STATE_RELEASED`) **before** triggering value transfers using `emit_transfer()`.
-2. **Deterministic State isolation**: State variables (`self.*`) are copied to local variables before non-deterministic `eq_principle` blocks execute, keeping validator memory sandboxes clean.
-3. **Role Access Control**: State modifications enforce modifiers that restrict actions strictly to relevant actors (e.g., `_only_buyer`, `_only_seller`, `_only_owner`).
+1. **Re-entrancy Guard**: Safe state progression is guaranteed by updating on-chain variables before triggering value transfers using `emit_transfer()`.
+2. **Deterministic State Isolation**: State variables are copied to local variables before non-deterministic `eq_principle` blocks execute, keeping validator sandboxes clean.
+3. **Role Access Control**: State modifications enforce modifiers that restrict actions strictly to relevant actors (`_only_buyer`, `_only_seller`, `_only_owner`).

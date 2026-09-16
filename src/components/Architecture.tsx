@@ -6,115 +6,111 @@ import { User, Globe, Server, Code, BrainCircuit, HardDriveDownload, ArrowRight 
 
 const stages = [
   {
-    id: "user",
-    title: "User",
+    id: "party",
+    title: "Buyer / Seller",
     icon: User,
     color: "from-purple-500 to-indigo-500",
     shadow: "shadow-purple-500/20",
     details: {
-      headline: "User Initiates Action",
-      role: "Triggers a transaction requiring subjective verification.",
+      headline: "Buyer / Seller Party",
+      role: "Initiates escrow, deposits funds, or submits dispute evidence.",
       code: `{
-  "action": "insure_flight_delay",
-  "params": {
-    "flightNumber": "AA-120",
-    "date": "2026-06-25",
-    "payoutAddress": "0x71...3A"
-  }
+  "role": "BUYER",
+  "action": "open_dispute",
+  "buyer_evidence": "Deliverable missing security audit logs and required endpoints."
 }`,
-      explanation: "Users initiate the contract process, such as requesting a parametric insurance payout if their flight was delayed. Since flight data requires checking external web sources, traditional contracts would fail or rely on centralized oracles."
+      explanation: "Escrow participants deposit funds, submit work completion proofs, or open disputes when deliverables differ from agreed terms."
     }
   },
   {
     id: "frontend",
-    title: "Frontend App",
+    title: "SmartEscrow DApp",
     icon: Globe,
     color: "from-blue-500 to-indigo-500",
     shadow: "shadow-blue-500/20",
     details: {
-      headline: "Responsive Web Interface",
-      role: "Formats user payload and captures Web3 signatures.",
-      code: `const payload = { flightNumber, date, address };
-const signature = await wallet.sign(payload);
-const response = await api.post('/payout', { payload, signature });`,
-      explanation: "The client-side interface captures details and wallet signatures, transmitting this information securely to the server via API endpoints while updating the UI to show connection/payout stages."
+      headline: "SmartEscrow Web3 DApp",
+      role: "Submits transactions directly to GenLayer Studio Next RPC.",
+      code: `const tx = await executeSmartEscrowWrite(
+  "resolve_dispute_with_ai",
+  [],
+  "0",
+  CONTRACT_ADDRESS
+);
+console.log("Transaction Hash:", tx.txHash);`,
+      explanation: "Direct client interface connecting Web3 wallets straight to the GenLayer Studio Next network without central backend API intermediaries."
     }
   },
   {
-    id: "backend",
-    title: "Backend API",
-    icon: Server,
-    color: "from-blue-500 to-cyan-500",
-    shadow: "shadow-blue-500/20",
-    details: {
-      headline: "Decentralized Gateway",
-      role: "Relays transactions and parameters to GenLayer.",
-      code: `app.post('/payout', async (req, res) => {
-  const tx = await genlayer.contracts.write({
-    address: CONTRACT_ADDRESS,
-    functionName: 'claimInsurance',
-    args: [req.body.payload]
-  });
-  return res.json({ txHash: tx.hash });
-});`,
-      explanation: "The application backend handles rate-limiting, validations, and relays inputs to GenLayer Intelligent Contracts, abstracting direct blockchain interactions from the user interface."
-    }
-  },
-  {
-    id: "genlayer",
-    title: "GenLayer Contract",
+    id: "contract",
+    title: "Intelligent Contract",
     icon: Code,
     color: "from-cyan-500 to-teal-500",
     shadow: "shadow-cyan-500/20",
     details: {
-      headline: "Intelligent Contract VM",
-      role: "Executes Python-based intelligent contract rules.",
-      code: `class FlightInsurance(IntelligentContract):
-    def claimInsurance(self, flight_info):
-        # Query web data
-        result = self.ai.query_web(
-            prompt=f"Was flight {flight_info.flightNumber} delayed on {flight_info.date}?",
-            consensus_nodes=3
+      headline: "SmartEscrow Intelligent Contract",
+      role: "Executes state machine rules and calls gl.eq_principle.",
+      code: `class SmartEscrow(gl.Contract):
+    def resolve_dispute_with_ai(self) -> str:
+        ruling = gl.eq_principle.prompt_non_comparative(
+            build_prompt,
+            task="Analyse evidence and return JSON with ruling.",
+            criteria="..."
         )
-        if result.consensus_reached and result.is_delayed:
-            self.payout(flight_info.payoutAddress)`,
-      explanation: "GenLayer contracts run on an advanced VM enabling Python code to execute web requests. The VM doesn't just run static logic; it can request external AI consensus dynamically during execution."
+        self.dispute_ruling = ruling
+        return ruling`,
+      explanation: "Python contract running on GenLayer VM. Executes access controls and invokes non-comparative LLM consensus during dispute execution."
     }
   },
   {
-    id: "ai",
-    title: "AI Verification",
+    id: "judgment",
+    title: "Decentralized Judgment",
     icon: BrainCircuit,
     color: "from-cyan-500 to-emerald-500",
     shadow: "shadow-cyan-500/20",
     details: {
-      headline: "Multi-LLM Consensus Layer",
-      role: "Queries distributed LLMs to verify contract claims.",
-      code: `// Validator Nodes Query LLMs:
-- Node 1 (GPT-4o): "Flight delayed by 3h 15m. True"
-- Node 2 (Claude 3.5): "Delayed by 3h 15m. True"
-- Node 3 (Llama 3): "Delayed 3.2 hours. True"
+      headline: "GenLayer Decentralized Judgment",
+      role: "Multi-LLM validator nodes evaluate evidence in parallel.",
+      code: `// Independent Validator Node Outputs:
+- Node 1 (Claude 3.5): "Ruling: BUYER. Reasoning: Logs absent."
+- Node 2 (GPT-4o):     "Ruling: BUYER. Reasoning: Audit log missing."
+- Node 3 (Llama 3):    "Ruling: BUYER. Reasoning: Incomplete submission."
 
-Result: Consensus Reached (3/3 votes)`,
-      explanation: "Rather than trusting a single AI source, GenLayer's network routes the prompt to multiple independent LLM validators. The contract only progresses if a consensus is achieved on the subjective claim."
+Consensus Result: 3/3 Votes -> BUYER Ruling Validated`,
+      explanation: "Validator nodes execute independent LLMs and check output against semantic criteria. Transaction finalizes only upon consensus."
     }
   },
   {
-    id: "blockchain",
-    title: "Blockchain Response",
+    id: "ruling",
+    title: "Consensus Ruling",
+    icon: Globe,
+    color: "from-emerald-500 to-teal-500",
+    shadow: "shadow-emerald-500/20",
+    details: {
+      headline: "Onchain Stored Ruling",
+      role: "Cryptographically commits ruling into persistent contract state.",
+      code: `{
+  "state": "DISPUTED",
+  "dispute_ruling": "{\\"ruling\\": \\"BUYER\\", \\"reasoning\\": \\"Evidence confirms missing deliverables.\\"}",
+  "validated_onchain": true
+}`,
+      explanation: "The AI judgment is stored in the smart contract's state, preventing tampering or unauthorized modification."
+    }
+  },
+  {
+    id: "settlement",
+    title: "Automated Settlement",
     icon: HardDriveDownload,
     color: "from-emerald-500 to-green-500",
     shadow: "shadow-emerald-500/20",
     details: {
-      headline: "State Finalized",
-      role: "Commits results to ledger, triggering payout transaction.",
-      code: `{
-  "status": "success",
-  "blockNumber": 1048293,
-  "transactionHash": "0x3f5c...92a1",
-  "logs": ["Payout of 1.5 ETH to 0x71...3A verified and executed"]
-}`,
-      explanation: "Once the AI consensus resolves the contract check, the final state is cryptographically committed to the ledger, and native assets are transferred to the payout address, closing the transaction."
+      headline: "Trustless Onchain Settlement",
+      role: "Transfers escrowed funds according to validated ruling.",
+      code: `def execute_ruling(self):
+    if self.ruling_winner == "BUYER":
+        self.state = STATE_RESOLVED_BUYER
+        emit_transfer(self.buyer, self.amount)`,
+      explanation: "Executes final settlement onchain, returning funds to the buyer or releasing payment to the seller based on the validated ruling."
     }
   }
 ];

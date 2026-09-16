@@ -50,7 +50,7 @@ export default function Navbar() {
               </div>
             </div>
             <span className="font-display text-xl font-bold tracking-tight text-white">
-              Gen<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Layer</span>
+              Smart<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Escrow</span>
             </span>
           </a>
 
