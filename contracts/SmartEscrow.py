@@ -1,5 +1,3 @@
-# { "Depends": "py-genlayer:test" }
-
 from genlayer import *
 import json
 
