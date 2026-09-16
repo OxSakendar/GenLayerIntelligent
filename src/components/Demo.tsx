@@ -37,7 +37,7 @@ const NETWORK = {
   chainId: "61997",
   currency: "GEN",
   explorer: "https://explorer-studio-dev.genlayer.com/",
-  contractAddress: "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c",
+  contractAddress: "0x141A33cF38dEa2B3f0ae471B634c7962FAd18fBf",
 };
 
 function NetworkCard() {

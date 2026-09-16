@@ -78,7 +78,7 @@ export default function Hero() {
             </a>
 
             <a
-              href="https://explorer-studio-dev.genlayer.com/address/0xb4412590158f0CceEc98ebffAFf99C851Ab6703c"
+              href="https://explorer-studio-dev.genlayer.com/address/0x141A33cF38dEa2B3f0ae471B634c7962FAd18fBf"
               target="_blank"
               rel="noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl text-base font-semibold text-gray-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-200"

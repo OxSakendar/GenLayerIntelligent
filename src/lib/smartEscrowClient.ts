@@ -43,7 +43,7 @@ interface EthereumProvider {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
 }
 
-const DEFAULT_CONTRACT_ADDRESS = "0xb4412590158f0CceEc98ebffAFf99C851Ab6703c";
+const DEFAULT_CONTRACT_ADDRESS = "0x141A33cF38dEa2B3f0ae471B634c7962FAd18fBf";
 const DEFAULT_RPC_URL = "https://studio-dev.genlayer.com/api";
 
 /**

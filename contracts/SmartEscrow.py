@@ -1,4 +1,6 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# { "Depends": "py-genlayer:test" }
+
+import genlayer as gl
 from genlayer import *
 import json
 
@@ -41,9 +43,9 @@ class SmartEscrow(gl.Contract):
         self.seller_evidence = ""
         self.dispute_ruling = ""
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # Write functions — lifecycle
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
+    # Write functions - lifecycle
+    # -------------------------------------------------------------------------
 
     @gl.public.write.payable
     def deposit(self) -> None:
@@ -82,7 +84,8 @@ class SmartEscrow(gl.Contract):
         self.state = STATE_RELEASED
         self.amount = u256(0)
 
-        emit_transfer(self.seller, release_amount)
+        recipient_contract = gl.get_contract_at(self.seller)
+        recipient_contract.emit_transfer(value=release_amount)
 
     @gl.public.write
     def open_dispute(self, buyer_evidence: str) -> None:
@@ -184,12 +187,13 @@ Respond ONLY with valid JSON:
 
         if ruling == "BUYER":
             self.state = STATE_RESOLVED_BUYER
-            recipient = self.buyer
+            target_addr = self.buyer
         else:
             self.state = STATE_RESOLVED_SELLER
-            recipient = self.seller
+            target_addr = self.seller
 
-        emit_transfer(recipient, release_amount)
+        recipient_contract = gl.get_contract_at(target_addr)
+        recipient_contract.emit_transfer(value=release_amount)
 
     @gl.public.write
     def refund_buyer(self) -> None:
@@ -202,11 +206,12 @@ Respond ONLY with valid JSON:
         self.amount = u256(0)
         self.state = STATE_REFUNDED
 
-        emit_transfer(self.buyer, refund_amount)
+        recipient_contract = gl.get_contract_at(self.buyer)
+        recipient_contract.emit_transfer(value=refund_amount)
 
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
     # View functions
-    # ─────────────────────────────────────────────────────────────────────────
+    # -------------------------------------------------------------------------
 
     @gl.public.view
     def get_state(self) -> str:
