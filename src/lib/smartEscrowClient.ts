@@ -160,8 +160,26 @@ export async function executeSmartEscrowWrite(
         throw new Error("Wallet transaction submission did not return a valid transaction hash");
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      throw new Error(`Wallet transaction failed for ${method}(): ${errorMsg}`);
+      console.warn("Wallet eth_sendTransaction failed, attempting GenLayer RPC fallback:", err);
+      try {
+        const rpcRes = await rpcRequest(rpcUrl, "gen_sendTransaction", [
+          {
+            to: contractAddress,
+            from: walletAddress,
+            data: { method, args },
+            value: valueWei,
+          },
+        ]);
+        if (rpcRes && (typeof rpcRes.txHash === "string" || typeof rpcRes.hash === "string")) {
+          txHash = (rpcRes.txHash || rpcRes.hash) as string;
+        } else {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          throw new Error(`Transaction failed for ${method}(): ${errorMsg}`);
+        }
+      } catch (fallbackErr) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        throw new Error(`Wallet transaction failed for ${method}(): ${errorMsg}`);
+      }
     }
   } else {
     // Direct RPC transaction execution
