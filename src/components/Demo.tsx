@@ -145,7 +145,7 @@ interface Transaction {
 const initialTransactions: Transaction[] = [
   {
     hash: "0x7d81...bc21",
-    contract: "SmartEscrow (0xb441...703c)",
+    contract: "SmartEscrow (0x141A...8fBf)",
     method: "resolve_dispute_with_ai",
     consensus: "3/3 Nodes (100% agreement)",
     status: "Success",
@@ -153,7 +153,7 @@ const initialTransactions: Transaction[] = [
   },
   {
     hash: "0x2a9e...f18a",
-    contract: "SmartEscrow (0xb441...703c)",
+    contract: "SmartEscrow (0x141A...8fBf)",
     method: "open_dispute",
     consensus: "3/3 Nodes (100% agreement)",
     status: "Success",
@@ -161,7 +161,7 @@ const initialTransactions: Transaction[] = [
   },
   {
     hash: "0x9c3f...6a55",
-    contract: "SmartEscrow (0xb441...703c)",
+    contract: "SmartEscrow (0x141A...8fBf)",
     method: "deposit",
     consensus: "3/3 Nodes (100% agreement)",
     status: "Success",
@@ -374,7 +374,7 @@ export default function Demo() {
 
     const newTx: Transaction = {
       hash: "Submitting...",
-      contract: "SmartEscrow (0xb441...703c)",
+      contract: "SmartEscrow (0x141A...8fBf)",
       method: methodName,
       consensus: "Executing AI Consensus...",
       status: "Pending",
