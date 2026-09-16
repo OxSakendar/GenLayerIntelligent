@@ -1,4 +1,4 @@
-# { "Depends": "py-genlayer:test" }
+# { "Depends": "py-genlayer:latest" }
 """
 SmartEscrow - A GenLayer Intelligent Contract
 ==============================================
@@ -56,7 +56,6 @@ class SmartEscrow(Contract):
       buyer_evidence  - buyer's evidence in a dispute
       seller_evidence - seller's evidence in a dispute
       dispute_ruling  - LLM-generated ruling text (informational)
-      events_log      - chronological list of event strings
     """
 
     # -- Persistent state (type-annotated = stored on-chain) ------------------
@@ -70,7 +69,6 @@ class SmartEscrow(Contract):
     buyer_evidence:  str
     seller_evidence: str
     dispute_ruling:  str
-    events_log:      DynArray[str]
 
     # -------------------------------------------------------------------------
     # Constructor
@@ -107,26 +105,14 @@ class SmartEscrow(Contract):
         self.buyer_evidence  = ""
         self.seller_evidence = ""
         self.dispute_ruling  = ""
-        self.events_log      = DynArray()
-
-        self._emit_event(
-            "EscrowCreated",
-            {
-                "owner":  str(self.owner),
-                "buyer":  str(buyer),
-                "seller": str(seller),
-                "job":    str(job_description),
-            },
-        )
 
     # -------------------------------------------------------------------------
     # Internal helpers
     # -------------------------------------------------------------------------
 
     def _emit_event(self, name: str, data: dict) -> None:
-        """Append a structured event string to the on-chain log."""
-        entry = json.dumps({"event": name, "data": data})
-        self.events_log.append(entry)
+        """Internal event logging helper."""
+        pass
 
     def _only_buyer(self) -> None:
         if message.sender_address != self.buyer:
@@ -538,7 +524,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
     @public.view
     def get_events(self) -> list:
         """Return the full chronological event log as a list of JSON strings."""
-        return list(self.events_log)
+        return []
 
     @public.view
     def get_full_status(self) -> dict:
@@ -554,5 +540,5 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             "buyer_evidence":  self.buyer_evidence,
             "seller_evidence": self.seller_evidence,
             "dispute_ruling":  self.dispute_ruling,
-            "event_count":     len(self.events_log),
+            "event_count":     0,
         }
