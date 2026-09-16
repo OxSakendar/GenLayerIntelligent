@@ -15,10 +15,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "GenLayer | Decentralized AI-Powered Intelligent Contracts",
-  description: "Build the future with GenLayer. A complete decentralized application powered by AI-driven Intelligent Contracts, enabling autonomous, transparent, and trustless decision-making.",
-  keywords: "GenLayer, Intelligent Contracts, Decentralized AI, Web3, Blockchain, AI Consensus, AI Oracle, Smart Contracts",
-  authors: [{ name: "GenLayer Team" }],
+  metadataBase: new URL("https://genlayerintelligent.vercel.app"),
+  title: "SmartEscrow — AI-Powered Decentralized Escrow",
+  description: "SmartEscrow is an AI-powered decentralized escrow system that uses GenLayer consensus to resolve buyer-seller disputes.",
+  keywords: "SmartEscrow, GenLayer, Intelligent Contracts, Decentralized Escrow, AI Dispute Resolution, Web3, Blockchain, AI Consensus",
+  authors: [{ name: "Sakendar — Developer / Builder" }],
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },
@@ -28,15 +29,26 @@ export const metadata: Metadata = {
     apple: "/icon.png",
   },
   openGraph: {
-    title: "GenLayer | Decentralized AI-Powered Intelligent Contracts",
-    description: "Autonomous, transparent, and trustless decision-making powered by AI-driven Intelligent Contracts.",
+    title: "SmartEscrow — Decentralized AI Dispute Resolution",
+    description: "SmartEscrow is an AI-powered decentralized escrow system that uses GenLayer consensus to resolve buyer-seller disputes.",
+    url: "https://genlayerintelligent.vercel.app/",
+    siteName: "SmartEscrow",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "SmartEscrow Icon",
+      },
+    ],
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GenLayer | Decentralized AI-Powered Intelligent Contracts",
-    description: "Autonomous, transparent, and trustless decision-making powered by AI-driven Intelligent Contracts.",
+    title: "SmartEscrow — Decentralized AI Dispute Resolution",
+    description: "SmartEscrow is an AI-powered decentralized escrow system that uses GenLayer consensus to resolve buyer-seller disputes.",
+    images: ["/icon.png"],
   },
 };
 
