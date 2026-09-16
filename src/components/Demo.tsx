@@ -406,10 +406,26 @@ export default function Demo() {
       }
 
       setSimulationState("success");
-      setTokenBalance((prev) => Math.max(0, parseFloat(prev) - 0.02).toFixed(4));
+      const valGen = Number(BigInt(valueWei)) / 1e18;
+      setTokenBalance((prev) => Math.max(0, parseFloat(prev) - (valGen > 0 ? valGen : 0.02)).toFixed(4));
 
       if (res.resultingStatus) {
         setContractStatus(res.resultingStatus);
+      } else if (methodName === "deposit") {
+        setContractStatus((prev) => ({
+          state: "FUNDED",
+          amount_wei: valueWei,
+          amount_gen: (valGen > 0 ? valGen : 1.0).toFixed(4),
+          owner: prev?.owner || "",
+          buyer: prev?.buyer || walletAddress,
+          seller: prev?.seller || "",
+          job_description: prev?.job_description || "",
+          work_submission: prev?.work_submission || "",
+          buyer_evidence: prev?.buyer_evidence || "",
+          seller_evidence: prev?.seller_evidence || "",
+          dispute_ruling: prev?.dispute_ruling || "",
+          event_count: (prev?.event_count || 0) + 1,
+        }));
       } else {
         await refreshContractState();
       }
