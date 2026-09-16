@@ -1,4 +1,4 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# { "Depends": "py-genlayer:test" }
 """
 SmartEscrow - A GenLayer Intelligent Contract
 ==============================================
@@ -23,6 +23,7 @@ Security:
   - LLM calls are wrapped inside gl.eq_principle to achieve validator consensus.
 """
 
+import genlayer as gl
 from genlayer import *
 import json
 import typing
@@ -107,6 +108,7 @@ class SmartEscrow(gl.Contract):
         self.buyer_evidence  = ""
         self.seller_evidence = ""
         self.dispute_ruling  = ""
+        self.events_log      = DynArray()
 
         self._emit_event(
             "EscrowCreated",
