@@ -379,7 +379,7 @@ export default function Demo() {
     const newTx: Transaction = {
       hash: "Submitting...",
       contract: "SmartEscrow (0x141A...8fBf)",
-      method: `${methodName} (${valGenLabel})`,
+      method: methodName,
       consensus: "Executing AI Consensus...",
       status: "Pending",
       time: "Just now",
@@ -683,7 +683,7 @@ export default function Demo() {
                       className="flex items-center justify-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
                     >
                       <ArrowRightLeft className="w-3.5 h-3.5" />
-                      deposit({depositAmountInput || "1.0"} GEN)
+                      deposit()
                     </button>
 
                     <button
