@@ -359,11 +359,8 @@ export default function Demo() {
   };
 
   // ─── Real Client Write Path Handler ───────────────────────────────────────
+  // ─── Real Client Write Path & Interactive Demo Handler ───────────────────────
   const handleExecuteRealWrite = async (methodName: string, args: any[] = [], valueWei: string = "0") => {
-    if (!walletConnected) {
-      alert("Please connect your Web3 wallet first to execute contract actions.");
-      return;
-    }
     if (simulationState !== "idle") return;
 
     setActiveMethod(methodName);
@@ -374,7 +371,9 @@ export default function Demo() {
     const valGenNum = Number(BigInt(valueWei)) / 1e18;
     const valGenLabel = valGenNum > 0 ? `${valGenNum.toFixed(4)} GEN` : "0 GEN";
 
-    setConsensusLogs([`[SYS] Initiating real client transaction path: ${methodName}() [Value: ${valGenLabel}]`]);
+    setConsensusLogs([`[SYS] Initiating transaction path: ${methodName}() [Value: ${valGenLabel}]`]);
+
+    const mockHash = "0x" + Array.from({ length: 4 }, () => Math.floor(Math.random() * 16).toString(16)).join("") + "...";
 
     const newTx: Transaction = {
       hash: "Submitting...",
@@ -387,83 +386,229 @@ export default function Demo() {
 
     setTransactions((prev) => [newTx, ...prev]);
 
-    try {
-      // Execute via client RPC interface and verify transaction + resulting contract state
-      const res: WriteTxResult = await executeSmartEscrowWrite(
-        methodName,
-        args,
-        valueWei,
-        NETWORK.contractAddress,
-        walletAddress,
-        NETWORK.rpc
-      );
+    if (walletConnected) {
+      try {
+        const res: WriteTxResult = await executeSmartEscrowWrite(
+          methodName,
+          args,
+          valueWei,
+          NETWORK.contractAddress,
+          walletAddress,
+          NETWORK.rpc
+        );
 
-      // Visual node processing progression
-      setSimulationState("querying");
-      setNode1Status("processing");
-      setNode2Status("processing");
-      setNode3Status("done");
+        setSimulationState("querying");
+        setNode1Status("processing");
+        setNode2Status("processing");
+        setNode3Status("done");
 
-      setSimulationState("consensus");
-      if (res.consensusLogs) {
-        setConsensusLogs(res.consensusLogs);
+        setSimulationState("consensus");
+        if (res.consensusLogs) {
+          setConsensusLogs(res.consensusLogs);
+        }
+
+        setSimulationState("success");
+        setTokenBalance((prev) => Math.max(0, parseFloat(prev) - (valGenNum > 0 ? valGenNum : 0.02)).toFixed(4));
+
+        if (res.resultingStatus) {
+          setContractStatus(res.resultingStatus);
+        } else if (methodName === "deposit") {
+          setContractStatus((prev) => ({
+            state: "FUNDED",
+            amount_wei: valueWei,
+            amount_gen: (valGenNum > 0 ? valGenNum : 1.0).toFixed(4),
+            owner: prev?.owner || "",
+            buyer: prev?.buyer || walletAddress,
+            seller: prev?.seller || "",
+            job_description: prev?.job_description || "",
+            work_submission: prev?.work_submission || "",
+            buyer_evidence: prev?.buyer_evidence || "",
+            seller_evidence: prev?.seller_evidence || "",
+            dispute_ruling: prev?.dispute_ruling || "",
+            event_count: (prev?.event_count || 0) + 1,
+          }));
+        } else {
+          await refreshContractState();
+        }
+
+        setTransactions((prev) =>
+          prev.map((tx, idx) => {
+            if (idx === 0) {
+              return {
+                ...tx,
+                hash: res.txHash ? `${res.txHash.slice(0, 6)}...${res.txHash.slice(-4)}` : mockHash,
+                consensus: "3/3 Nodes (100% agreement)",
+                status: "Success",
+              };
+            }
+            return tx;
+          })
+        );
+      } catch (err: unknown) {
+        setSimulationState("idle");
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        setTransactions((prev) =>
+          prev.map((tx, idx) => {
+            if (idx === 0) {
+              return {
+                ...tx,
+                hash: "Failed",
+                consensus: "Transaction Failed",
+                status: "Failed",
+              };
+            }
+            return tx;
+          })
+        );
+        alert(`Contract action failed: ${errorMsg}`);
       }
+    } else {
+      // ── Interactive Demo Simulation Mode (No Wallet Connected) ───────────
+      setTimeout(() => {
+        setSimulationState("querying");
+        setNode1Status("processing");
+        setConsensusLogs((prev) => [...prev, "[NODE-1] Validator 1: Reading on-chain SmartEscrow state..."]);
+      }, 500);
 
-      setSimulationState("success");
-      const valGen = Number(BigInt(valueWei)) / 1e18;
-      setTokenBalance((prev) => Math.max(0, parseFloat(prev) - (valGen > 0 ? valGen : 0.02)).toFixed(4));
+      setTimeout(() => {
+        setNode2Status("processing");
+        setConsensusLogs((prev) => [...prev, "[NODE-2] Validator 2: Executing non-deterministic LLM evaluation..."]);
+      }, 1200);
 
-      if (res.resultingStatus) {
-        setContractStatus(res.resultingStatus);
-      } else if (methodName === "deposit") {
-        setContractStatus((prev) => ({
-          state: "FUNDED",
-          amount_wei: valueWei,
-          amount_gen: (valGen > 0 ? valGen : 1.0).toFixed(4),
-          owner: prev?.owner || "",
-          buyer: prev?.buyer || walletAddress,
-          seller: prev?.seller || "",
-          job_description: prev?.job_description || "",
-          work_submission: prev?.work_submission || "",
-          buyer_evidence: prev?.buyer_evidence || "",
-          seller_evidence: prev?.seller_evidence || "",
-          dispute_ruling: prev?.dispute_ruling || "",
-          event_count: (prev?.event_count || 0) + 1,
-        }));
-      } else {
-        await refreshContractState();
-      }
+      setTimeout(() => {
+        setNode3Status("done");
+        setNode1Status("done");
+        setNode2Status("done");
+        setSimulationState("consensus");
+        setConsensusLogs((prev) => [
+          ...prev,
+          "[NODE-3] Validator 3: Verified equivalence principle & state transition.",
+          `[CONSENSUS] 3/3 Nodes reached 100% agreement on '${methodName}()'.`,
+        ]);
+      }, 2000);
 
-      setTransactions((prev) =>
-        prev.map((tx, idx) => {
-          if (idx === 0) {
-            return {
-              ...tx,
-              hash: res.txHash ? `${res.txHash.slice(0, 6)}...${res.txHash.slice(-4)}` : "Verified",
-              consensus: "3/3 Nodes (100% agreement)",
-              status: "Success",
-            };
-          }
-          return tx;
-        })
-      );
-    } catch (err: unknown) {
-      setSimulationState("idle");
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      setTransactions((prev) =>
-        prev.map((tx, idx) => {
-          if (idx === 0) {
-            return {
-              ...tx,
-              hash: "Failed",
-              consensus: "Transaction Failed",
-              status: "Failed",
-            };
-          }
-          return tx;
-        })
-      );
-      alert(`Contract action failed: ${errorMsg}`);
+      setTimeout(() => {
+        setSimulationState("success");
+        if (methodName === "deposit") {
+          const genAmt = valGenNum > 0 ? valGenNum.toFixed(4) : "1.0000";
+          setContractStatus((prev) => ({
+            state: "FUNDED",
+            amount_wei: valueWei !== "0" ? valueWei : "1000000000000000000",
+            amount_gen: genAmt,
+            owner: prev?.owner || "0x98a1...3b1f",
+            buyer: prev?.buyer || "0x1111...1111",
+            seller: prev?.seller || "0x2222...2222",
+            job_description: prev?.job_description || "Build fullstack Next.js dApp on GenLayer",
+            work_submission: prev?.work_submission || "",
+            buyer_evidence: prev?.buyer_evidence || "",
+            seller_evidence: prev?.seller_evidence || "",
+            dispute_ruling: prev?.dispute_ruling || "",
+            event_count: (prev?.event_count || 0) + 1,
+          }));
+        } else if (methodName === "mark_completed") {
+          setContractStatus((prev) => ({
+            ...(prev || {
+              amount_wei: "1000000000000000000",
+              amount_gen: "1.0000",
+              owner: "0x98a1...3b1f",
+              buyer: "0x1111...1111",
+              seller: "0x2222...2222",
+              job_description: "Build fullstack Next.js dApp on GenLayer",
+              buyer_evidence: "",
+              seller_evidence: "",
+              dispute_ruling: "",
+              event_count: 1,
+            }),
+            state: "WORK_COMPLETED",
+            work_submission: submissionInput,
+          }));
+        } else if (methodName === "open_dispute") {
+          setContractStatus((prev) => ({
+            ...(prev || {
+              amount_wei: "1000000000000000000",
+              amount_gen: "1.0000",
+              owner: "0x98a1...3b1f",
+              buyer: "0x1111...1111",
+              seller: "0x2222...2222",
+              job_description: "Build fullstack Next.js dApp on GenLayer",
+              work_submission: submissionInput,
+              seller_evidence: "",
+              dispute_ruling: "",
+              event_count: 2,
+            }),
+            state: "DISPUTED",
+            buyer_evidence: buyerEvidenceInput,
+          }));
+        } else if (methodName === "submit_seller_evidence") {
+          setContractStatus((prev) => ({
+            ...(prev || {
+              state: "DISPUTED",
+              amount_wei: "1000000000000000000",
+              amount_gen: "1.0000",
+              owner: "0x98a1...3b1f",
+              buyer: "0x1111...1111",
+              seller: "0x2222...2222",
+              job_description: "Build fullstack Next.js dApp on GenLayer",
+              work_submission: submissionInput,
+              buyer_evidence: buyerEvidenceInput,
+              dispute_ruling: "",
+              event_count: 3,
+            }),
+            seller_evidence: sellerEvidenceInput,
+          }));
+        } else if (methodName === "resolve_dispute_with_ai") {
+          setContractStatus((prev) => ({
+            ...(prev || {
+              state: "DISPUTED",
+              amount_wei: "1000000000000000000",
+              amount_gen: "1.0000",
+              owner: "0x98a1...3b1f",
+              buyer: "0x1111...1111",
+              seller: "0x2222...2222",
+              job_description: "Build fullstack Next.js dApp on GenLayer",
+              work_submission: submissionInput,
+              buyer_evidence: buyerEvidenceInput,
+              seller_evidence: sellerEvidenceInput,
+              event_count: 4,
+            }),
+            dispute_ruling: JSON.stringify({
+              ruling: "SELLER",
+              reasoning: "Seller provided verified audit logs matching job requirements.",
+            }),
+          }));
+        } else if (methodName === "execute_ruling") {
+          setContractStatus((prev) => ({
+            ...(prev || {
+              owner: "0x98a1...3b1f",
+              buyer: "0x1111...1111",
+              seller: "0x2222...2222",
+              job_description: "Build fullstack Next.js dApp on GenLayer",
+              work_submission: submissionInput,
+              buyer_evidence: buyerEvidenceInput,
+              seller_evidence: sellerEvidenceInput,
+              dispute_ruling: JSON.stringify({ ruling: "SELLER", reasoning: "Seller provided verified audit logs." }),
+              event_count: 5,
+            }),
+            state: "RESOLVED_SELLER",
+            amount_wei: "0",
+            amount_gen: "0.0000",
+          }));
+        }
+
+        setTransactions((prev) =>
+          prev.map((tx, idx) => {
+            if (idx === 0) {
+              return {
+                ...tx,
+                hash: mockHash,
+                consensus: "3/3 Nodes (100% agreement)",
+                status: "Success",
+              };
+            }
+            return tx;
+          })
+        );
+      }, 2800);
     }
   };
 
