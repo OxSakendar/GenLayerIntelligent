@@ -76,7 +76,12 @@ class SmartEscrow(gl.Contract):
     # Constructor
     # ─────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, buyer: Address, seller: Address, job_description: str) -> None:
+    def __init__(
+        self,
+        buyer: Address,
+        seller: Address,
+        job_description: str
+    ) -> None:
         """
         Deploy a new SmartEscrow instance.
 
