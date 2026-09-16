@@ -670,7 +670,7 @@ export default function Demo() {
                       className="flex items-center justify-center gap-1.5 bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/30 text-violet-400 font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-50"
                     >
                       <FileCode2 className="w-3.5 h-3.5" />
-                      submit_evidence()
+                      submit_seller_evidence()
                     </button>
                   </div>
 
