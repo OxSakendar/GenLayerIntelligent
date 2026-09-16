@@ -20,10 +20,9 @@ Security:
   - All state-mutating functions enforce role-based access control.
   - Funds are locked until an explicit state transition authorizes release.
   - Re-entrancy risk is mitigated by updating state BEFORE emitting transfers.
-  - LLM calls are wrapped inside gl.eq_principle to achieve validator consensus.
+  - LLM calls are wrapped inside eq_principle to achieve validator consensus.
 """
 
-import genlayer as gl
 from genlayer import *
 import json
 import typing
@@ -42,7 +41,7 @@ STATE_RESOLVED_SELLER  = "RESOLVED_SELLER"  # dispute resolved in seller's favou
 STATE_REFUNDED         = "REFUNDED"
 
 
-class SmartEscrow(gl.Contract):
+class SmartEscrow(Contract):
     """
     Intelligent Escrow Contract on GenLayer.
 
@@ -98,7 +97,7 @@ class SmartEscrow(gl.Contract):
         if not job_description.strip():
             raise Exception("Job description cannot be empty")
 
-        self.owner           = gl.message.sender_address
+        self.owner           = message.sender_address
         self.buyer           = buyer
         self.seller          = seller
         self.amount          = u256(0)
@@ -130,15 +129,15 @@ class SmartEscrow(gl.Contract):
         self.events_log.append(entry)
 
     def _only_buyer(self) -> None:
-        if gl.message.sender_address != self.buyer:
+        if message.sender_address != self.buyer:
             raise Exception("Access denied: caller is not the buyer")
 
     def _only_seller(self) -> None:
-        if gl.message.sender_address != self.seller:
+        if message.sender_address != self.seller:
             raise Exception("Access denied: caller is not the seller")
 
     def _only_owner(self) -> None:
-        if gl.message.sender_address != self.owner:
+        if message.sender_address != self.owner:
             raise Exception("Access denied: caller is not the contract owner")
 
     def _require_state(self, *allowed: str) -> None:
@@ -152,7 +151,7 @@ class SmartEscrow(gl.Contract):
     # Write functions - happy-path lifecycle
     # -------------------------------------------------------------------------
 
-    @gl.public.write.payable
+    @public.write.payable
     def deposit(self) -> None:
         """
         Buyer deposits funds into the escrow.
@@ -161,13 +160,13 @@ class SmartEscrow(gl.Contract):
         - Escrow must be in AWAITING_DEPOSIT state.
         - A non-zero value must be sent with the transaction.
 
-        The contract's balance increases by gl.message.value (GEN wei).
+        The contract's balance increases by message.value (GEN wei).
         State transitions: AWAITING_DEPOSIT -> FUNDED.
         """
         self._only_buyer()
         self._require_state(STATE_AWAITING_DEPOSIT)
 
-        value = gl.message.value
+        value = message.value
         if value == u256(0):
             raise Exception("Deposit amount must be greater than zero")
 
@@ -179,7 +178,7 @@ class SmartEscrow(gl.Contract):
             {"buyer": str(self.buyer), "amount": str(value)},
         )
 
-    @gl.public.write
+    @public.write
     def mark_completed(self, submission_details: str) -> None:
         """
         Seller signals that the agreed work has been delivered.
@@ -209,7 +208,7 @@ class SmartEscrow(gl.Contract):
             },
         )
 
-    @gl.public.write
+    @public.write
     def approve_payment(self) -> None:
         """
         Buyer approves the seller's work and releases the escrowed funds.
@@ -247,7 +246,7 @@ class SmartEscrow(gl.Contract):
             {"recipient": str(self.seller), "amount": str(release_amount)},
         )
 
-    @gl.public.write
+    @public.write
     def open_dispute(self, buyer_evidence: str) -> None:
         """
         Buyer opens a dispute if dissatisfied with the seller's submission.
@@ -277,7 +276,7 @@ class SmartEscrow(gl.Contract):
             },
         )
 
-    @gl.public.write
+    @public.write
     def submit_seller_evidence(self, seller_evidence: str) -> None:
         """
         Seller submits rebuttal / evidence during an active dispute.
@@ -308,7 +307,7 @@ class SmartEscrow(gl.Contract):
     # AI-powered dispute resolution (non-deterministic - uses eq_principle)
     # -------------------------------------------------------------------------
 
-    @gl.public.write
+    @public.write
     def resolve_dispute_with_ai(self) -> None:
         """
         AI-driven dispute resolution using GenLayer's LLM + Equivalence Principle.
@@ -328,11 +327,11 @@ class SmartEscrow(gl.Contract):
         - The dispute_ruling field is stored for transparency.
         - The owner must still execute the final payout with execute_ruling().
 
-        [WARNING]  The LLM call is isolated inside gl.eq_principle.prompt_non_comparative
+        [WARNING]  The LLM call is isolated inside eq_principle.prompt_non_comparative
             so that every validator independently verifies the ruling quality,
             achieving on-chain consensus without requiring identical LLM outputs.
         """
-        caller = gl.message.sender_address
+        caller = message.sender_address
         if caller not in (self.buyer, self.seller, self.owner):
             raise Exception("Only buyer, seller, or owner can trigger AI resolution")
 
@@ -372,7 +371,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             return prompt
 
         # -- AI call wrapped in eq_principle for on-chain consensus ------------
-        ruling_json: str = gl.eq_principle.prompt_non_comparative(
+        ruling_json: str = eq_principle.prompt_non_comparative(
             build_prompt,
             task=(
                 "Analyse the escrow dispute evidence and return a JSON ruling "
@@ -402,7 +401,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
     # Owner: execute final dispute outcome
     # -------------------------------------------------------------------------
 
-    @gl.public.write
+    @public.write
     def execute_ruling(self) -> None:
         """
         Owner executes the final resolution of a dispute.
@@ -467,7 +466,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             {"recipient": str(recipient), "amount": str(release_amount)},
         )
 
-    @gl.public.write
+    @public.write
     def refund_buyer(self) -> None:
         """
         Owner can refund the buyer at any time when funds are locked
@@ -499,17 +498,17 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
     # View functions (read-only - no state changes)
     # -------------------------------------------------------------------------
 
-    @gl.public.view
+    @public.view
     def get_state(self) -> str:
         """Return the current lifecycle state of the escrow."""
         return self.state
 
-    @gl.public.view
+    @public.view
     def get_amount(self) -> str:
         """Return the amount currently held in escrow (as a string to avoid overflow)."""
         return str(self.amount)
 
-    @gl.public.view
+    @public.view
     def get_parties(self) -> dict:
         """Return the key addresses involved in this escrow."""
         return {
@@ -518,7 +517,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             "seller": str(self.seller),
         }
 
-    @gl.public.view
+    @public.view
     def get_job_details(self) -> dict:
         """Return the job description and seller's work submission."""
         return {
@@ -526,7 +525,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             "work_submission": self.work_submission,
         }
 
-    @gl.public.view
+    @public.view
     def get_dispute_info(self) -> dict:
         """Return all dispute-related data."""
         return {
@@ -536,12 +535,12 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no extr
             "ai_ruling":       self.dispute_ruling,
         }
 
-    @gl.public.view
+    @public.view
     def get_events(self) -> list:
         """Return the full chronological event log as a list of JSON strings."""
         return list(self.events_log)
 
-    @gl.public.view
+    @public.view
     def get_full_status(self) -> dict:
         """Return a comprehensive snapshot of the contract's current status."""
         return {
