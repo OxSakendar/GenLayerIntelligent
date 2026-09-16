@@ -8,7 +8,7 @@ SmartEscrow is a GenLayer Intelligent Contract that enables buyer-seller escrow 
 
 ## 🌐 Deployment Information
 
-- **Live Demo:** [https://genlayerintelligent.vercel.app/](https://genlayerintelligent.vercel.app/)
+- **Live Demo:** [https://genlayersmartescrow.vercel.app/](https://genlayersmartescrow.vercel.app/)
 - **Network:** GenLayer Studio Next
 - **Chain ID:** `61997`
 - **Smart Contract Address:** `0x141A33cF38dEa2B3f0ae471B634c7962FAd18fBf`

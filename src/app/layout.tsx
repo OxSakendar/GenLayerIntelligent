@@ -15,7 +15,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://genlayerintelligent.vercel.app"),
+  metadataBase: new URL("https://genlayersmartescrow.vercel.app"),
   title: "SmartEscrow — AI-Powered Decentralized Escrow",
   description: "SmartEscrow is an AI-powered decentralized escrow system that uses GenLayer consensus to resolve buyer-seller disputes.",
   keywords: "SmartEscrow, GenLayer, Intelligent Contracts, Decentralized Escrow, AI Dispute Resolution, Web3, Blockchain, AI Consensus",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SmartEscrow — Decentralized AI Dispute Resolution",
     description: "SmartEscrow is an AI-powered decentralized escrow system that uses GenLayer consensus to resolve buyer-seller disputes.",
-    url: "https://genlayerintelligent.vercel.app/",
+    url: "https://genlayersmartescrow.vercel.app/",
     siteName: "SmartEscrow",
     images: [
       {
