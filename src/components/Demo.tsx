@@ -183,7 +183,7 @@ export default function Demo() {
   const [loadingStatus, setLoadingStatus] = useState(false);
 
   // Form Inputs for Real Write Operations
-  const [depositAmountInput, setDepositAmountInput] = useState("1.0");
+  const [depositAmountInput, setDepositAmountInput] = useState("0.0");
   const [submissionInput, setSubmissionInput] = useState("Deliverable code repository & documentation delivered.");
   const [buyerEvidenceInput, setBuyerEvidenceInput] = useState("Deliverable was 5 days late and missing security audit logs.");
   const [sellerEvidenceInput, setSellerEvidenceInput] = useState("Security logs were provided in /docs/audit.log as per agreement.");
@@ -820,7 +820,7 @@ export default function Demo() {
                   <div className="grid grid-cols-2 gap-2 pt-2">
                     <button
                       onClick={() => {
-                        const genVal = parseFloat(depositAmountInput) || 1.0;
+                        const genVal = parseFloat(depositAmountInput) || 0.0;
                         const weiVal = BigInt(Math.floor(genVal * 1e18)).toString();
                         handleExecuteRealWrite("deposit", [], weiVal);
                       }}

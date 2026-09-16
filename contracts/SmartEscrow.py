@@ -55,9 +55,6 @@ class SmartEscrow(gl.Contract):
             raise Exception("Invalid state for deposit")
 
         value = gl.message.value
-        if value == u256(0):
-            raise Exception("Deposit amount must be greater than zero")
-
         self.amount = value
         self.state = STATE_FUNDED
 
