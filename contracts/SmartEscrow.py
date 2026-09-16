@@ -216,32 +216,32 @@ Respond ONLY with valid JSON:
         return str(self.amount)
 
     @public.view
-    def get_parties(self) -> dict:
-        return {
+    def get_parties(self) -> str:
+        return json.dumps({
             "owner": str(self.owner),
             "buyer": str(self.buyer),
             "seller": str(self.seller),
-        }
+        })
 
     @public.view
-    def get_job_details(self) -> dict:
-        return {
+    def get_job_details(self) -> str:
+        return json.dumps({
             "job_description": self.job_description,
             "work_submission": self.work_submission,
-        }
+        })
 
     @public.view
-    def get_dispute_info(self) -> dict:
-        return {
+    def get_dispute_info(self) -> str:
+        return json.dumps({
             "state": self.state,
             "buyer_evidence": self.buyer_evidence,
             "seller_evidence": self.seller_evidence,
             "ai_ruling": self.dispute_ruling,
-        }
+        })
 
     @public.view
-    def get_full_status(self) -> dict:
-        return {
+    def get_full_status(self) -> str:
+        return json.dumps({
             "state": self.state,
             "amount_wei": str(self.amount),
             "owner": str(self.owner),
@@ -252,4 +252,4 @@ Respond ONLY with valid JSON:
             "buyer_evidence": self.buyer_evidence,
             "seller_evidence": self.seller_evidence,
             "dispute_ruling": self.dispute_ruling,
-        }
+        })

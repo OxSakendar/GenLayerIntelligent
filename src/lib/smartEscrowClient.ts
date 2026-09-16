@@ -86,26 +86,35 @@ export async function fetchContractFullStatus(
     },
   ]);
 
-  if (!result || typeof result !== "object") {
-    throw new Error(`Failed to read SmartEscrow contract state at ${contractAddress}: Empty RPC response`);
+  let dataObj: Record<string, unknown> = {};
+  if (typeof result === "string") {
+    try {
+      dataObj = JSON.parse(result);
+    } catch {
+      dataObj = {};
+    }
+  } else if (result && typeof result === "object") {
+    dataObj = result as Record<string, unknown>;
+  } else {
+    throw new Error(`Failed to read SmartEscrow contract state at ${contractAddress}: Invalid RPC response`);
   }
 
-  const amountWei = (result.amount_wei as string) || "0";
+  const amountWei = (dataObj.amount_wei as string) || "0";
   const amountGen = (Number(BigInt(amountWei)) / 1e18).toFixed(4);
 
   return {
-    state: (result.state as string) || "AWAITING_DEPOSIT",
+    state: (dataObj.state as string) || "AWAITING_DEPOSIT",
     amount_wei: amountWei,
     amount_gen: amountGen,
-    owner: (result.owner as string) || "",
-    buyer: (result.buyer as string) || "",
-    seller: (result.seller as string) || "",
-    job_description: (result.job_description as string) || "",
-    work_submission: (result.work_submission as string) || "",
-    buyer_evidence: (result.buyer_evidence as string) || "",
-    seller_evidence: (result.seller_evidence as string) || "",
-    dispute_ruling: (result.dispute_ruling as string) || "",
-    event_count: typeof result.event_count === "number" ? result.event_count : 0,
+    owner: (dataObj.owner as string) || "",
+    buyer: (dataObj.buyer as string) || "",
+    seller: (dataObj.seller as string) || "",
+    job_description: (dataObj.job_description as string) || "",
+    work_submission: (dataObj.work_submission as string) || "",
+    buyer_evidence: (dataObj.buyer_evidence as string) || "",
+    seller_evidence: (dataObj.seller_evidence as string) || "",
+    dispute_ruling: (dataObj.dispute_ruling as string) || "",
+    event_count: typeof dataObj.event_count === "number" ? dataObj.event_count : 0,
   };
 }
 
