@@ -370,12 +370,15 @@ export default function Demo() {
     setNode1Status("pending");
     setNode2Status("pending");
     setNode3Status("pending");
-    setConsensusLogs([`[SYS] Initiating real client transaction path: ${methodName}()`]);
+    const valGenNum = Number(BigInt(valueWei)) / 1e18;
+    const valGenLabel = valGenNum > 0 ? `${valGenNum.toFixed(4)} GEN` : "0 GEN";
+
+    setConsensusLogs([`[SYS] Initiating real client transaction path: ${methodName}() [Value: ${valGenLabel}]`]);
 
     const newTx: Transaction = {
       hash: "Submitting...",
       contract: "SmartEscrow (0x141A...8fBf)",
-      method: methodName,
+      method: `${methodName} (${valGenLabel})`,
       consensus: "Executing AI Consensus...",
       status: "Pending",
       time: "Just now",
